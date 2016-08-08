@@ -1,8 +1,10 @@
 import React from 'react';
+import Text from './text';
 import css from '../containers/App.css';
 import { OBJECT_TYPES } from '../utils/parser';
 import { OBJECT_STYLES } from '../utils/parser';
 import { extend, map } from 'lodash';
+
 
 export default class SObject extends React.Component {
 
@@ -12,19 +14,17 @@ export default class SObject extends React.Component {
 
   render() {
 
-    const { text } = this.props;
+    const { text, textStyles } = this.props;
 
     return (
       <div className={css.object} style={this.buildStyle()}>
-        <p>{text}</p>
+        <Text text={text} styles={textStyles} />
       </div>
     );
   }
 
-  calculatePosition() {
+  calculatePositionAndSize() {
     const { bb } = this.props;
-    // Position & Size
-    
     return {
       top: bb[5] / 381,
       left: bb[4] / 381,
@@ -33,12 +33,11 @@ export default class SObject extends React.Component {
     }
   }
 
-  defaultStyle() {
+  defaultStyles() {
     const { type } = this.props;
 
     switch(type) {
       case OBJECT_TYPES.TEXT_BOX:
-        return { alignItems: 'flex-end', justifyContent: 'center' }
       case OBJECT_TYPES.IMAGE:
       case OBJECT_TYPES.RECTANGLE:
       case OBJECT_TYPES.ROUNDED_RECTANGLE:
@@ -51,18 +50,20 @@ export default class SObject extends React.Component {
     }
   }
 
-  customStyles() {
-    return extend(...map(this.props.styles, (value, type) => {
+
+  customStyles(obj) {
+    return extend(...map(obj.styles, (value, type) => {
       switch(type) {
         case OBJECT_STYLES.WIDTH:
         case OBJECT_STYLES.HEIGHT:
           return
-        case OBJECT_STYLES.FILL:
-          return { 'backgroundColor': '#ddd' }
-        case OBJECT_STYLES.FILL_COLOR:
-          return { 'backgroundColor': value } 
-        case OBJECT_STYLES.FILL_OPACITY:
-          return {}
+        case OBJECT_STYLES.FILL: // OBJECT_STYLES.FILL_COLOR, OBJECT_STYLES.FILL_OPACITY
+          const color = obj.styles[OBJECT_STYLES.FILL_COLOR] || '#ddd';
+          const opacity = obj.styles[OBJECT_STYLES.FILL_OPACITY];
+          // TODO: Add opacity
+          const background = value == 1 ? color : 'none';
+
+          return { 'backgroundColor': background }
         case OBJECT_STYLES.LINE:
           return { border: '1px solid #333' }
         case OBJECT_STYLES.LINE_COLOR:
@@ -83,7 +84,6 @@ export default class SObject extends React.Component {
           let alignment = value == 0 ? 'flex-start' : ((value == 1) ? 'center' : 'flex-end');
           return { alignItems: alignment }
         case OBJECT_STYLES.DESCRIPTION:
-          return {}
         case OBJECT_STYLES.INHERITED_STYLES:
         case OBJECT_STYLES.LINK:
         case OBJECT_STYLES.LINE_TYPE:
@@ -98,10 +98,14 @@ export default class SObject extends React.Component {
   }
 
   buildStyle() {
+
+    const { template={}, master={} } = this.props;
     return extend(
-      this.defaultStyle(),
-      this.calculatePosition(),
-      this.customStyles()
+      this.defaultStyles(),
+      this.customStyles(master),
+      this.customStyles(template),
+      this.customStyles(this.props),
+      this.calculatePositionAndSize(),
     )
   }
 }

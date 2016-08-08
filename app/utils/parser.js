@@ -6,7 +6,7 @@ export const ACTION_CONSTANTS = {
   STYLE_OBJECT: 'STYLE_OBJECT',
   ORDER_OBJECTS: 'ORDER_OBJECTS',
   TRANSFORM_OBJECT: 'TRANSFORM_OBJECT',
-  BACKGROUND_STYLE: 'BACKGROUND_STYLE',
+  SLIDE_STYLE: 'SLIDE_STYLE',
   CREATE_SLIDE: 'CREATE_SLIDE',
   DELETE_SLIDE: 'DELETE_SLIDE',
   REARRANGE_SLIDE: 'REARRANGE_SLIDE',
@@ -202,12 +202,9 @@ function styleObject(json) {
 }
 
 function _parseStyles(json) {
-  let styles = [];
+  let styles = {};
   for(let i = 0; i < json.length; i+= 2) {
-    styles.push({
-      type: _styles[json[i]],
-      value: json[i + 1]
-    })
+    styles[_rawToObjectStyles[json[i]]] = json[i + 1]
   }
   return styles;
 }
@@ -238,7 +235,7 @@ export const OBJECT_STYLES = {
   CHARTS_4: 'CHARTS_4',
 }
 
-const _styles = {
+const _rawToObjectStyles = {
   '8': OBJECT_STYLES.WIDTHWIDTH,
   '9': OBJECT_STYLES.HEIGHTHEIGHT,
 
@@ -256,7 +253,7 @@ const _styles = {
   '43': OBJECT_STYLES.LINE_DASHLINE_DASH,
   '44': OBJECT_STYLES.VERTICAL_ALIGNMENT, 
   '49': OBJECT_STYLES.DESCRIPTIONDESCRIPTION,
-  '54': OBJECT_STYLES.INHERITED_STYLESINHERITED_STYLES,
+  '54': OBJECT_STYLES.INHERITED_STYLES,
 
   '72': OBJECT_STYLES.LINKLINK,
   '135': OBJECT_STYLES.LINE_TYPELINE_TYPE,
@@ -325,7 +322,7 @@ const _directions = {
 }
 
 /*****************************************************************************
-*  9 | Background Style
+*  9 | Slide Style
 ******************************************************************************
 
 [
@@ -338,7 +335,7 @@ const _directions = {
 
 function backgroundStyle(json) {
   return {
-    action: C.BACKGROUND_STYLE,
+    action: C.SLIDE_STYLE,
     styles: _parseStyles(json[2]),
     slide_id: json[3]
   }
@@ -383,7 +380,7 @@ function backgroundStyle(json) {
   0,                          // Type
   [
     1, "simple-light-2",      // Theme
-    2, "TITLE_AND_BODY"       // Template
+    2, "TITLE_AND_BODY"       // Layout
   ]
 ],
 */
@@ -493,7 +490,7 @@ function deleteText(json) {
 ******************************************************************************
 [
   17,           // Text Style
-  "i0",         // Slide ID
+  "i0",         // Object ID
   null,         // ?
   0,            // Start Index
   1,            // End Index (if it's the end it includes an additional character)
@@ -507,7 +504,7 @@ function deleteText(json) {
 function styleText(json) {
   return {
     action: C.STYLE_TEXT,
-    slide_id: json[1],
+    object_id: json[1],
     start_index: json[3],
     end_index: json[4],
     style: _parseTextStyles(json[6])
@@ -573,12 +570,9 @@ function changeSlideProperties(json) {
 }
 
 function _slideProperties(json) {
-  let props = [];
+  let props = {};
   for(let i = 0; i < json.length; i += 2) {
-    props.push({
-      type: _rawToSlideProperties[json[i]],
-      value: json[i + 1]
-    })
+    props[_rawToSlideProperties[json[i]]] = json[i + 1]; 
   }
   return props;
 }

@@ -8,6 +8,9 @@ import ControlBar from '../components/control_bar';
 import style from './App.css';
 import _ from 'lodash';
 
+import { SLIDE_TYPES } from '../utils/parser';
+import { SLIDE_PROPERTIES } from '../utils/parser';
+
 @connect(
   state => ({
     slides: state.presentation.slides,
@@ -28,9 +31,32 @@ export default class App extends Component {
     const { slides, objects, commands, commandsIndex } = this.props;
     const { runCommands } = this.props;
 
-    const combined = _.map(slides, s => ({...s,
-      objects: _.filter(objects, o => o.slide_id == s.id)
+    let combined = _.map(slides, s => ({...s,
+      objects: _.filter(objects, o => o.slide_id == s.id),
     }))
+
+    combined = _.map(combined, s => {
+      if(s.type == SLIDE_TYPES.NORMAL) {
+        return {...s, 
+          template: _.find(combined, s2 => 
+            s2.type == SLIDE_TYPES.TEMPLATE && 
+            s2.props[SLIDE_PROPERTIES.LAYOUT] == s.props[SLIDE_PROPERTIES.LAYOUT]
+          ),
+          master: _.find(combined, s2 => s2.type == SLIDE_TYPES.MASTER)
+        }
+      }
+      return s;
+    })
+
+
+
+      
+
+
+
+
+
+
 
     return (
       <div className={style.app}>

@@ -5,13 +5,14 @@ import _ from 'lodash';
 
 let zIndex = 1;
 export const initialState = {
-  width: 800,
-  height: 600,
+  width: 365760,
+  height: 205740,
   slides: {
     "p": {
       id: "p",
       zIndex: 0,
       type: SLIDE_TYPES.NORMAL,
+      styles: {},
       props: {}
     },
   },
@@ -41,12 +42,12 @@ function reduce(state, payload) {
     case ACTION_CONSTANTS.CREATE_OBJECT:
       return {...state, objects: {
         ...state.objects,
-        [payload.id]: {..._.omit(payload, 'action'), zIndex: zIndex++}
+        [payload.id]: {..._.omit(payload, 'action'), textStyles: [], zIndex: zIndex++}
       }}
     case ACTION_CONSTANTS.STYLE_OBJECT:
       obj = state.objects[payload.object_id];
       return {...state, objects: {...state.objects,
-        [payload.object_id]: {...obj, styles: payload.styles}
+        [payload.object_id]: {...obj, styles: _.extend({}, obj.styles, payload.styles)}
       }}
     // case ACTION_CONSTANTS.ORDER_OBJECTS:
     //   objs = _.chain(state.objects)
@@ -59,8 +60,11 @@ function reduce(state, payload) {
       return {...state, objects: {...state.objects,
         [payload.object_id]: {...obj, bb: payload.bb}
       }}
-    // case ACTION_CONSTANTS.BACKGROUND_STYLE:
-    //   return
+    case ACTION_CONSTANTS.BACKGROUND_STYLE:
+      slide = state.slides[payload.slide_id];
+      return {...state, slides: {...state.slides,
+        [payload.slide_id]: {...slide, styles: _.extend({}, slide.styles, payload.styles)}  
+      }}
     case ACTION_CONSTANTS.CREATE_SLIDE:
       // TODO: Figure out order
       return {...state, slides: {...state.slides,
@@ -91,14 +95,26 @@ function reduce(state, payload) {
       return {...state, objects: {...state.objects,
         [payload.object_id]: obj
       }}
-    // case ACTION_CONSTANTS.STYLE_TEXT:
-    //   return
+    case ACTION_CONSTANTS.STYLE_TEXT:
+      obj = state.objects[payload.object_id];
+      return {...state, objects: {...state.objects,
+        [payload.object_id]: {...obj, 
+          textStyles: [...obj.textStyles, _.omit(payload, 'action')]
+        }
+      }}
+
     // case ACTION_CONSTANTS.CREATE_LIST_ENTITY:
     //   return
     // case ACTION_CONSTANTS.STYLE_LIST_ENTITY:
     //   return
-    // case ACTION_CONSTANTS.CHANGE_SLIDE_PROPERTIES:
-    //   return
+    case ACTION_CONSTANTS.CHANGE_SLIDE_PROPERTIES:
+      slides = _.keyBy(_.map(payload.slide_ids, slide_id => {
+        slide = state.slides[slide_id];
+        return {...slide, props: _.extend({}, slide.props, payload.props)}
+      }), 'id');
+
+      return {...state, slides: {...state.slides, ...slides}}
+
     case ACTION_CONSTANTS.NO_OP:
       return state;
     default:
