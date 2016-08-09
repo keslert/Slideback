@@ -20,9 +20,6 @@ export const initialState = {
 };
 
 export function presentationReducer(state = initialState, {type, payload}) {
-
-
-
   switch (type) {
     case RUN_COMMANDS:
       const _payload = Array.isArray(payload) ? payload : [payload]
@@ -36,19 +33,25 @@ function reduce(state, payload) {
   let obj, text, slide, slides, objs;
   switch (payload.action) {
     case ACTION_CONSTANTS.DELETE_OBJECTS:
+
       return {...state, objects: _.omit(state.objects, payload.object_id)};
     case ACTION_CONSTANTS.RESIZE_PAGE:
+
       return {...state, width: payload.width, height: payload.height};
     case ACTION_CONSTANTS.CREATE_OBJECT:
+
       return {...state, objects: {
         ...state.objects,
-        [payload.id]: {..._.omit(payload, 'action'), textStyles: [], zIndex: zIndex++}
+        [payload.id]: {..._.omit(payload, 'action'), text: '', textStyles: [], zIndex: zIndex++}
       }}
-    case ACTION_CONSTANTS.STYLE_OBJECT:
-      obj = state.objects[payload.object_id];
-      return {...state, objects: {...state.objects,
-        [payload.object_id]: {...obj, styles: _.extend({}, obj.styles, payload.styles)}
-      }}
+
+    case ACTION_CONSTANTS.STYLE_OBJECTS:
+      objs = _.keyBy(_.map(payload.object_ids, object_id => {
+        obj = state.objects[object_id];
+        return {...obj, styles: {...obj.styles, ...payload.styles}}
+      }), 'id');
+      return {...state, objects: {...state.objects, ...objs}}
+        
     // case ACTION_CONSTANTS.ORDER_OBJECTS:
     //   objs = _.chain(state.objects)
     //     .pick(payload.object_ids)
@@ -60,41 +63,83 @@ function reduce(state, payload) {
       return {...state, objects: {...state.objects,
         [payload.object_id]: {...obj, bb: payload.bb}
       }}
+
     case ACTION_CONSTANTS.BACKGROUND_STYLE:
       slide = state.slides[payload.slide_id];
       return {...state, slides: {...state.slides,
-        [payload.slide_id]: {...slide, styles: _.extend({}, slide.styles, payload.styles)}  
+        [payload.slide_id]: {...slide, styles: {...slide.styles, ...payload.styles}} 
       }}
+
     case ACTION_CONSTANTS.CREATE_SLIDE:
-      // TODO: Figure out order
-      return {...state, slides: {...state.slides,
-        [payload.id]: {..._.omit(payload, 'action'), zIndex: zIndex++}
-      }}
+      slide = {..._.omit(payload, 'action'), zIndex: zIndex++};
+      slides = _.sortBy([slide, ..._.filter(state.slides, s => s.type == payload.type)], 'zIndex');
+      slides = rearrangeSlides(slides, _.size(slides) - 1, payload.index);
+
+      return {...state, slides: {...state.slides, ...slides}}
+
     case ACTION_CONSTANTS.DELETE_SLIDE:
       return {...state, slides: _.omit(state.slides, payload.slide_id)}
-    // case ACTION_CONSTANTS.REARRANGE_SLIDE:
-    //   return
+    
+    case ACTION_CONSTANTS.REARRANGE_SLIDE:
+      slides = _.sortBy(_.filter(state.slides, s => s.type == SLIDE_TYPES.NORMAL), 'zIndex');
+      slides = rearrangeSlides(slides, payload.start_index, payload.end_index);
+
+      return {...state, slides: {...state.slides, ...slides}}
+
     case ACTION_CONSTANTS.APPEND_TEXT:
       obj = {...state.objects[payload.object_id]};
-      text = obj.text || '';
       obj.text = [
-        text.slice(0, payload.index),
+        obj.text.slice(0, payload.index),
         payload.text,
-        text.slice(payload.index)
+        obj.text.slice(payload.index)
       ].join('')
+
+      obj.textStyles = _.map(obj.textStyles, style => {
+        if(payload.index <= style.start_index) {
+          return {...style, 
+            start_index: style.start_index + payload.text.length,
+            end_index: style.end_index + payload.text.length
+          }
+        } else if(payload.index <= style.end_index) {
+          return {...style,
+            end_index: style.end_index + payload.text.length  
+          }
+        }
+        return style;
+      })
+
       return {...state, objects: {...state.objects,
         [payload.object_id]: obj
       }}
+
     case ACTION_CONSTANTS.DELETE_TEXT:
       obj = {...state.objects[payload.object_id]};
-      text = obj.text || '';
       obj.text = [
-        text.slice(0, payload.start_index),
-        text.slice(payload.end_index)
+        obj.text.slice(0, payload.start_index),
+        obj.text.slice(payload.end_index)
       ].join('')
+
+      const length = payload.end_index - payload.start_index;
+      obj.textStyles = _.filter(_.map(obj.textStyles, style => {
+        if(payload.end_index < style.start_index) {
+          return {...style,
+            start_index: style.start_index - length,
+            end_index: style.end_index - length,
+          }
+        } else if(payload.start_index <= style.start_index) {
+          return {...style,
+            start_index: payload.start_index,
+            end_index: payload.start_index + style.end_index - payload.end_index
+          }
+        } else {
+          return style;
+        }
+      }), style => style.end_index > style.start_index)
+
       return {...state, objects: {...state.objects,
         [payload.object_id]: obj
       }}
+
     case ACTION_CONSTANTS.STYLE_TEXT:
       obj = state.objects[payload.object_id];
       return {...state, objects: {...state.objects,
@@ -117,8 +162,35 @@ function reduce(state, payload) {
 
     case ACTION_CONSTANTS.NO_OP:
       return state;
+      
     default:
-      console.log("Unknown Presentation Action");
+      console.log("Unknown Presentation Action: " + payload.action);
       return state;
   }
+
+
+  function rearrange(arr, start_index, end_index) {
+    let _arr = [...arr]; 
+    const i = _arr.splice(start_index, 1)[0];
+    return [
+      ..._arr.slice(0, end_index),
+      i,
+      ..._arr.slice(end_index)
+    ]
+  }
+
+  function rearrangeSlides(slides, start_index, end_index) {
+    const zIndices = rearrange(_.map(slides, 'zIndex'), start_index, end_index); 
+    return _.keyBy(slides.map((s, i) => ({...s, zIndex: zIndices[i]})), 'id');
+  }
 }
+
+// from 1 to 2
+// [a, b, c, d]
+// [a, c, d]
+// [a, c, b, d]
+
+// from 2 to 1
+// [a, b, c, d]
+// [a, b, d]
+// [a, c, b, d]

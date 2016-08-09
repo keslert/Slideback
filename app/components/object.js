@@ -4,21 +4,31 @@ import css from '../containers/App.css';
 import { OBJECT_TYPES } from '../utils/parser';
 import { OBJECT_STYLES } from '../utils/parser';
 import { extend, map } from 'lodash';
-
+import tinycolor from 'tinycolor2'; 
 
 export default class SObject extends React.Component {
 
   static propTypes = {
-
+    text: React.PropTypes.string,
+    textStyles: React.PropTypes.array, 
+    template: React.PropTypes.object,
+    master: React.PropTypes.object
   };
 
-  render() {
+  static defaultProps = {
+    master: {},
+    template: {}
+  }
 
-    const { text, textStyles } = this.props;
+  render() {
+    const { master, template, text, textStyles } = this.props;
 
     return (
       <div className={css.object} style={this.buildStyle()}>
-        <Text text={text} styles={textStyles} />
+        <Text text={text} 
+              master={master.textStyles}
+              template={template.textStyles}
+              styles={textStyles} />
       </div>
     );
   }
@@ -58,10 +68,12 @@ export default class SObject extends React.Component {
         case OBJECT_STYLES.HEIGHT:
           return
         case OBJECT_STYLES.FILL: // OBJECT_STYLES.FILL_COLOR, OBJECT_STYLES.FILL_OPACITY
-          const color = obj.styles[OBJECT_STYLES.FILL_COLOR] || '#ddd';
+          const hex = obj.styles[OBJECT_STYLES.FILL_COLOR] || '#ddd';
           const opacity = obj.styles[OBJECT_STYLES.FILL_OPACITY];
-          // TODO: Add opacity
-          const background = value == 1 ? color : 'none';
+
+          const color = tinycolor(hex);
+          color.setAlpha(opacity);
+          const background = value == 1 ? color.toRgbString() : 'none';
 
           return { 'backgroundColor': background }
         case OBJECT_STYLES.LINE:
@@ -99,7 +111,7 @@ export default class SObject extends React.Component {
 
   buildStyle() {
 
-    const { template={}, master={} } = this.props;
+    const { template, master } = this.props;
     return extend(
       this.defaultStyles(),
       this.customStyles(master),
@@ -109,71 +121,3 @@ export default class SObject extends React.Component {
     )
   }
 }
-
-// 3048 = 0.0254
-
-
-/*
-
-
-
-width: 365760
-height: 205740
-
-
-         22860
-
-       365760
-       365760
-
-
-365760,
-205740
-205740
-
-0.0254
-
-
-
-3.048,0,0,1.7145
-[3.048,0,0,1.905,0,0]]
-
-0:2.8402
-1:0
-2:0
-3:0.6842
-4:12468.334
-
-[
-  3.048,  // a
-  0,      // b
-  0,      // c
-  1.7145, // d
-  0,      // e
-  0       // f
-]
-[3.048,0,0,1.7145,3048,0]]]
-[3.048,0,0,1.7145,362.2183,0]]
-
-
-[3.048,0,0,0.2482,0,0]]]
-
-
-0.2482 = 30480
-
-0.254
-
-
-3.048 = Full Across?
-
-
-
-
-(e,f)       (e + a, f + b)
------------------------
-|                     |
-|                     |
-|                     |
------------------------
-(e + c, f + d)
-*/

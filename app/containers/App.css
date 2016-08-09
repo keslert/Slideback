@@ -64,8 +64,14 @@
   height: 50px;
   border: 1px dashed #ddd;
   display: flex;
+  box-sizing: border-box;
+  padding: 10px;
 }
 
 .object p {
   margin: 0;
+}
+
+.text { 
+  width: 100%;
 }

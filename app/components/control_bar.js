@@ -27,7 +27,7 @@ export default class ControlBar extends React.Component {
       if(i == commands.length) {
         clearInterval(this.handle);
       }
-    }, 100);
+    }, 50);
   }
 
   render() {

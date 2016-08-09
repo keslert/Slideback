@@ -13,7 +13,7 @@ export default class Filmstrip extends React.Component {
   render() {
     const { slides } = this.props;
 
-    const filtered = filter(slides, s => s.type == SLIDE_TYPES.NORMAL);
+    const filtered = _.sortBy(filter(slides, s => s.type == SLIDE_TYPES.NORMAL), 'zIndex');
     return (
       <div className={style.filmstrip}>
         {filtered.map(s => <Slide {...s} maxWidth={200} key={s.id}/>)}
