@@ -1,6 +1,8 @@
 export const ACTION_CONSTANTS = {
   NO_OP: 'NO_OP',
   DELETE_OBJECTS: 'DELETE_OBJECTS',
+  CREATE_GROUP: 'CREATE_GROUP',
+  DELETE_GROUP: 'DELETE_GROUP',
   RESIZE_PAGE: 'RESIZE_PAGE',
   CREATE_OBJECT: 'CREATE_OBJECT',
   STYLE_OBJECTS: 'STYLE_OBJECTS',
@@ -35,6 +37,8 @@ function parse(json) {
       return deleteObject(json);
     case 1:
       return resizePage(json);
+    case 2:
+      return createGroup(json);
     case 3:
       return createObject(json);
     case 4:
@@ -43,6 +47,8 @@ function parse(json) {
       return styleObject(json);
     case 6:
       return transformObject(json);
+    case 7:
+      return deleteGroup(json);
     case 8:
       return orderObjects(json);
     case 9:
@@ -86,7 +92,7 @@ function parse(json) {
 function deleteObject(json) {
   return {
     action: C.DELETE_OBJECTS,
-    ids: json[1]
+    object_ids: json[1]
   }
 }
 
@@ -108,6 +114,27 @@ function resizePage(json) {
   }
 }
 
+
+/*****************************************************************************
+*  2 | CREATE GROUP
+******************************************************************************
+[
+    2,
+    "g16236f9108_0_168",                        // Group ID
+    ["g16236f9108_0_163","g16236f9108_0_164"],  // Object IDs
+    [1,0,0,1.1111,-11015,8897],                 // BB
+    "g16236f9108_0_162"                         // Slide ID
+]
+*/
+function createGroup(json) {
+  return {
+    action: C.CREATE_GROUP,
+    group_id: json[1],
+    object_ids: json[2],
+    bb: json[3],
+    slide_id: json[4]
+  }
+}
 
 /*****************************************************************************
 *  3 | Create Object
@@ -141,6 +168,8 @@ export const OBJECT_TYPES = {
   SCRIBBLE: 'SCRIBBLE',
   RECTANGLE: 'RECTANGLE',
   ROUNDED_RECTANGLE: 'ROUNDED_RECTANGLE',
+  ROUND_SINGLE_CORNER_RECTANGLE: 'ROUND_SINGLE_CORNER_RECTANGLE',
+  RIGHT_TRIANGLE: 'RIGHT_TRIANGLE',
   TEXT_BOX: 'TEXT_BOX',
   LINE: 'LINE',
   VIDEO: 'VIDEO',
@@ -152,6 +181,8 @@ const _rawToObjectType = {
   '4': OBJECT_TYPES.SCRIBBLE,
   '6': OBJECT_TYPES.RECTANGEL,
   '7': OBJECT_TYPES.ROUNDED_RECTANGLE,
+  '76': OBJECT_TYPES.ROUND_SINGLE_CORNER_RECTANGLE,
+  '79': OBJECT_TYPES.RIGHT_TRIANGLE,
   '108': OBJECT_TYPES.TEXT_BOX,
   '153': OBJECT_TYPES.LINE,
   '154': '?',
@@ -204,6 +235,8 @@ function _parseStyles(json) {
 
 
 export const OBJECT_STYLES = {
+  HANDLE_1: 'HANDLE_1',
+  HANDLE_2: 'HANDLE_2',
   WIDTH: 'WIDTH',
   HEIGHT: 'HEIGHT',
   FILL: 'FILL',
@@ -229,6 +262,8 @@ export const OBJECT_STYLES = {
 }
 
 const _rawToObjectStyles = {
+  '0': OBJECT_STYLES.HANDLE_1,
+  '1': OBJECT_STYLES.HANDLE_2,
   '8': OBJECT_STYLES.WIDTH,
   '9': OBJECT_STYLES.HEIGHT,
 
@@ -281,6 +316,20 @@ function transformObject(json) {
   }
 }
 
+/*****************************************************************************
+*  7 | DELETE GROUP
+******************************************************************************
+[
+  7,
+  "g16236f9108_0_168"       // Group ID
+]
+*/
+function deleteGroup(json) {
+  return {
+    action: C.DELETE_GROUP,
+    group_id: json[1]
+  }
+}
 
 /*****************************************************************************
 *  8 | Object Order

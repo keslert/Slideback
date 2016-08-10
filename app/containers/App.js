@@ -35,16 +35,20 @@ export default class App extends Component {
       objects: _.filter(objects, o => o.slide_id == s.id),
     }))
 
+    combined = _.map(combined, s => ({...s,  
+      master: _.find(combined, s2 => s2.type == SLIDE_TYPES.MASTER)}
+    ))
+
     combined = _.map(combined, s => {
       if(s.type == SLIDE_TYPES.NORMAL) {
         return {...s, 
           template: _.find(combined, s2 => 
             s2.type == SLIDE_TYPES.TEMPLATE && 
             s2.props[SLIDE_PROPERTIES.LAYOUT] == s.props[SLIDE_PROPERTIES.LAYOUT]
-          ),
-          master: _.find(combined, s2 => s2.type == SLIDE_TYPES.MASTER)
+          )
         }
       }
+      
       return s;
     })
 

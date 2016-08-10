@@ -2,6 +2,7 @@ import React from 'react';
 import css from '../containers/App.css';
 import { find } from 'lodash';
 import { TEXT_STYLES } from '../utils/parser';
+import { getColor } from '../utils/color';
 
 export default class Text extends React.Component {
 
@@ -9,6 +10,7 @@ export default class Text extends React.Component {
      styles: React.PropTypes.array,
      master: React.PropTypes.array,
      template: React.PropTypes.array,
+     theme: React.PropTypes.array,
   };
 
   static defaultProps = {
@@ -75,12 +77,12 @@ export default class Text extends React.Component {
     let _styles = {};
     
     _.forEach([...master, ...template], style => {
-      _.extend(_styles, ..._.map(style.style, this.mapStyles));
+      _.extend(_styles, ..._.map(style.style, _style => this.mapStyles(_style)));
     })
     
     _.forEach(styles, style => {
       if(index >= style.start_index && index < style.end_index) {
-        _.extend(_styles, ..._.map(style.style, this.mapStyles));
+        _.extend(_styles, ..._.map(style.style, _style => this.mapStyles(_style)));
       }
     })
 
@@ -98,7 +100,8 @@ export default class Text extends React.Component {
       case TEXT_STYLES.TEXT_HIGHLIGHT:
         return { backgroundColor: value ? value : 'none' }
       case TEXT_STYLES.TEXT_COLOR:
-        return { color: value ? value : 'transparent' } // TODO: Maybe null?
+        const color = getColor(1,value,1,this.props.theme);
+        return { color } 
       case TEXT_STYLES.FONT:
         return { fontFamily: value }
       case TEXT_STYLES.FONT_SIZE:

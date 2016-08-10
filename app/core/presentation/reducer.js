@@ -1,6 +1,11 @@
 /* eslint-disable no-case-declarations */
 import { RUN_COMMANDS } from './constants';
-import { ACTION_CONSTANTS, SLIDE_TYPES } from '../../utils/parser';
+import { 
+  ACTION_CONSTANTS, 
+  SLIDE_TYPES, 
+  OBJECT_TYPES,
+  OBJECT_STYLES 
+} from '../../utils/parser';
 import _ from 'lodash';
 
 let zIndex = 1;
@@ -34,7 +39,7 @@ function reduce(state, payload) {
   switch (payload.action) {
     case ACTION_CONSTANTS.DELETE_OBJECTS:
 
-      return {...state, objects: _.omit(state.objects, payload.object_id)};
+      return {...state, objects: _.omit(state.objects, payload.object_ids)};
     case ACTION_CONSTANTS.RESIZE_PAGE:
 
       return {...state, width: payload.width, height: payload.height};
@@ -42,7 +47,12 @@ function reduce(state, payload) {
 
       return {...state, objects: {
         ...state.objects,
-        [payload.id]: {..._.omit(payload, 'action'), text: '', textStyles: [], zIndex: zIndex++}
+        [payload.id]: {..._.omit(payload, 'action'),
+          styles: {...defaultObjectStyles(payload.type), ...payload.styles}, 
+          text: '', 
+          textStyles: [], 
+          zIndex: zIndex++
+        }
       }}
 
     case ACTION_CONSTANTS.STYLE_OBJECTS:
@@ -64,14 +74,14 @@ function reduce(state, payload) {
         [payload.object_id]: {...obj, bb: payload.bb}
       }}
 
-    case ACTION_CONSTANTS.BACKGROUND_STYLE:
+    case ACTION_CONSTANTS.SLIDE_STYLE:
       slide = state.slides[payload.slide_id];
       return {...state, slides: {...state.slides,
         [payload.slide_id]: {...slide, styles: {...slide.styles, ...payload.styles}} 
       }}
 
     case ACTION_CONSTANTS.CREATE_SLIDE:
-      slide = {..._.omit(payload, 'action'), zIndex: zIndex++};
+      slide = {..._.omit(payload, 'action'), styles: {}, zIndex: zIndex++};
       slides = _.sortBy([slide, ..._.filter(state.slides, s => s.type == payload.type)], 'zIndex');
       slides = rearrangeSlides(slides, _.size(slides) - 1, payload.index);
 
@@ -183,14 +193,15 @@ function reduce(state, payload) {
     const zIndices = rearrange(_.map(slides, 'zIndex'), start_index, end_index); 
     return _.keyBy(slides.map((s, i) => ({...s, zIndex: zIndices[i]})), 'id');
   }
+
+  function defaultObjectStyles(type) {
+    switch(type) {
+      case OBJECT_TYPES.RECTANGLE:
+      case OBJECT_TYPES.ROUND_SINGLE_CORNER_RECTANGLE:
+      case OBJECT_TYPES.ROUNDED_RECTANGLE:
+        return { [OBJECT_STYLES.FILL]: 1 }
+      default:
+        return {}
+    }
+  }
 }
-
-// from 1 to 2
-// [a, b, c, d]
-// [a, c, d]
-// [a, c, b, d]
-
-// from 2 to 1
-// [a, b, c, d]
-// [a, b, d]
-// [a, c, b, d]

@@ -3,7 +3,7 @@ import { ADD_COMMANDS } from './constants';
 import parse from '../../utils/parser';
 
 export const initialState = {
-  commands: parse(require('json!../../../data/data-1.json')),
+  commands: parse(require('json!../../../data/theme-change.json')),
   index: 0
 };
 

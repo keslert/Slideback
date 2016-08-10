@@ -1,10 +1,9 @@
 import React from 'react';
 import Text from './text';
 import css from '../containers/App.css';
-import { OBJECT_TYPES } from '../utils/parser';
-import { OBJECT_STYLES } from '../utils/parser';
+import { OBJECT_TYPES, OBJECT_STYLES } from '../utils/parser';
+import { getColor } from '../utils/color';
 import { extend, map } from 'lodash';
-import tinycolor from 'tinycolor2'; 
 
 export default class SObject extends React.Component {
 
@@ -21,32 +20,69 @@ export default class SObject extends React.Component {
   }
 
   render() {
-    const { master, template, text, textStyles } = this.props;
+    const { theme, master, template, text, textStyles } = this.props;
 
     return (
       <div className={css.object} style={this.buildStyle()}>
         <Text text={text} 
               master={master.textStyles}
               template={template.textStyles}
-              styles={textStyles} />
+              styles={textStyles}
+              theme={theme} />
       </div>
     );
   }
 
   calculatePositionAndSize() {
     const { bb } = this.props;
-    return {
-      top: bb[5] / 381,
-      left: bb[4] / 381,
-      width: bb[0] * 315,
-      height: bb[3] * 315
+
+    let top = bb[5] / 381;
+    let left = bb[4] / 381;
+    let width = bb[0] * 315;
+    let height = bb[3] * 315;
+    let transform = '';
+
+    if(width < 0) {
+      width *= -1;
+      left -= width;
+      transform += 'scaleX(-1) ';
     }
+    if(height < 0) {
+      height *= -1;
+      top -= height;
+      transform += 'scaleY(-1) ';
+    }
+
+    return { top, left, width, height, transform }
   }
 
   defaultStyles() {
-    const { type } = this.props;
+    const { type, styles, theme } = this.props;
 
     switch(type) {
+      case OBJECT_TYPES.ROUND_SINGLE_CORNER_RECTANGLE:
+        return { borderTopRightRadius: '10%' }
+      case OBJECT_TYPES.RIGHT_TRIANGLE:
+        const bb = this.calculatePositionAndSize();
+
+        const color = getColor(
+          styles[OBJECT_STYLES.FILL],
+          styles[OBJECT_STYLES.FILL_COLOR],
+          styles[OBJECT_STYLES.FILL_OPACITY],
+          theme
+        );
+
+
+        return {
+          width: 0,
+          height: 0,
+          padding: 0,
+          borderBottom: `${bb.width / 2}px solid ${color}`,
+          borderTop: `${bb.width / 2}px solid transparent`,
+          borderLeft: `${bb.height / 2}px solid ${color}`,
+          borderRight: `${bb.height / 2}px solid transparent`,
+        }
+        
       case OBJECT_TYPES.TEXT_BOX:
       case OBJECT_TYPES.IMAGE:
       case OBJECT_TYPES.RECTANGLE:
@@ -63,21 +99,31 @@ export default class SObject extends React.Component {
 
   customStyles(obj) {
     return extend(...map(obj.styles, (value, type) => {
+
+      if(this.props.type == OBJECT_TYPES.RIGHT_TRIANGLE) {
+        if(type == OBJECT_STYLES.LINE ||
+           type == OBJECT_STYLES.LINE_COLOR ||
+           type == OBJECT_STYLES.LINE_WIDTH) {
+           return {}
+        }
+      }
+
+
       switch(type) {
         case OBJECT_STYLES.WIDTH:
         case OBJECT_STYLES.HEIGHT:
           return
-        case OBJECT_STYLES.FILL: // OBJECT_STYLES.FILL_COLOR, OBJECT_STYLES.FILL_OPACITY
-          const hex = obj.styles[OBJECT_STYLES.FILL_COLOR] || '#ddd';
-          const opacity = obj.styles[OBJECT_STYLES.FILL_OPACITY];
+        case OBJECT_STYLES.FILL:
+          const color = getColor(
+            value,
+            obj.styles[OBJECT_STYLES.FILL_COLOR],
+            obj.styles[OBJECT_STYLES.FILL_OPACITY],
+            this.props.theme
+          );
 
-          const color = tinycolor(hex);
-          color.setAlpha(opacity);
-          const background = value == 1 ? color.toRgbString() : 'none';
-
-          return { 'backgroundColor': background }
+          return { 'backgroundColor': color }
         case OBJECT_STYLES.LINE:
-          return { border: '1px solid #333' }
+          return { border: value == 0 ? 'none' : `1px solid #333` }
         case OBJECT_STYLES.LINE_COLOR:
           return  { borderColor: value }
         case OBJECT_STYLES.LINE_WIDTH:
@@ -113,11 +159,14 @@ export default class SObject extends React.Component {
 
     const { template, master } = this.props;
     return extend(
+      this.calculatePositionAndSize(),
       this.defaultStyles(),
       this.customStyles(master),
       this.customStyles(template),
       this.customStyles(this.props),
-      this.calculatePositionAndSize(),
     )
   }
 }
+
+// TODO: If a object from higher contains a null, just get rid of it from the object so it doesn't
+// override lower styles.
