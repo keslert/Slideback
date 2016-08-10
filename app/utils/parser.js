@@ -252,7 +252,8 @@ export const OBJECT_STYLES = {
   LINE_DASH: 'LINE_DASH',
   VERTICAL_ALIGNMENT: 'VERTICAL_ALIGNMENT',
   DESCRIPTION: 'DESCRIPTION',
-  INHERITED_STYLES: 'INHERITED_STYLES',
+  PLACEHOLDER_TYPE: 'PLACEHOLDER_TYPE',
+  VISIBLE: 'VISIBLE',
   LINK: 'LINK',
   LINE_TYPE: 'LINE_TYPE',
   CHARTS_1: 'CHARTS_1',
@@ -281,7 +282,8 @@ const _rawToObjectStyles = {
   '43': OBJECT_STYLES.LINE_DASH,
   '44': OBJECT_STYLES.VERTICAL_ALIGNMENT, 
   '49': OBJECT_STYLES.DESCRIPTION,
-  '54': OBJECT_STYLES.INHERITED_STYLES,
+  '54': OBJECT_STYLES.PLACEHOLDER_TYPE,  
+  '55': OBJECT_STYLES.PLACEHOLDER_ID, // 0=first,1=second,2=third
 
   '72': OBJECT_STYLES.LINK,
   '135': OBJECT_STYLES.LINE_TYPE,
@@ -549,7 +551,7 @@ function styleText(json) {
     object_id: json[1],
     start_index: json[3],
     end_index: json[4],
-    style: _parseTextStyles(json[6])
+    styles: _parseTextStyles(json[6])
   }
 }
 
@@ -574,6 +576,7 @@ export const TEXT_STYLES = {
   FONT_SIZE: 'FONT_SIZE',
   LINE_HEIGHT: 'LINE_HEIGHT',
   TEXT_ALIGNMENT: 'TEXT_ALIGNMENT',
+  LIST_ENTITY_TYPE: 'LIST_ENTITY_TYPE',
 }
 
 const _rawToTextStyles = {
@@ -625,6 +628,7 @@ export const SLIDE_PROPERTIES = {
   THEME: 'THEME',
   LAYOUT: 'LAYOUT',
   THEME_NAME: 'THEME_NAME',
+  SET_LAYOUT_NAME: 'SET_LAYOUT_NAME',
 }
 
 const _rawToSlideProperties = {
@@ -632,6 +636,7 @@ const _rawToSlideProperties = {
   1: SLIDE_PROPERTIES.THEME,
   2: SLIDE_PROPERTIES.LAYOUT,
   4: SLIDE_PROPERTIES.THEME_NAME,
+  5: SLIDE_PROPERTIES.SET_LAYOUT_NAME,
 }
 
 /*****************************************************************************

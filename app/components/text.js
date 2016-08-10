@@ -77,12 +77,14 @@ export default class Text extends React.Component {
     let _styles = {};
     
     _.forEach([...master, ...template], style => {
-      _.extend(_styles, ..._.map(style.style, _style => this.mapStyles(_style)));
+      // if(style.end_index - style.start_index > 1) {
+        _.extend(_styles, ..._.map(style.styles, _style => this.mapStyles(_style)));
+      // }
     })
     
     _.forEach(styles, style => {
       if(index >= style.start_index && index < style.end_index) {
-        _.extend(_styles, ..._.map(style.style, _style => this.mapStyles(_style)));
+        _.extend(_styles, ..._.map(style.styles, _style => this.mapStyles(_style)));
       }
     })
 

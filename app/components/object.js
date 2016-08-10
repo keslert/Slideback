@@ -142,7 +142,7 @@ export default class SObject extends React.Component {
           let alignment = value == 0 ? 'flex-start' : ((value == 1) ? 'center' : 'flex-end');
           return { alignItems: alignment }
         case OBJECT_STYLES.DESCRIPTION:
-        case OBJECT_STYLES.INHERITED_STYLES:
+        case OBJECT_STYLES.PLACEHOLDER_TYPE:
         case OBJECT_STYLES.LINK:
         case OBJECT_STYLES.LINE_TYPE:
         case OBJECT_STYLES.CHARTS_1:

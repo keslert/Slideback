@@ -10,8 +10,10 @@ import _ from 'lodash';
 
 let zIndex = 1;
 export const initialState = {
-  width: 365760,
-  height: 205740,
+  pageSize: { 
+    width: 365760, 
+    height: 205740 
+  },
   slides: {
     "p": {
       id: "p",
@@ -42,7 +44,7 @@ function reduce(state, payload) {
       return {...state, objects: _.omit(state.objects, payload.object_ids)};
     case ACTION_CONSTANTS.RESIZE_PAGE:
 
-      return {...state, width: payload.width, height: payload.height};
+      return {...state, pageSize: {width: payload.width, height: payload.height}};
     case ACTION_CONSTANTS.CREATE_OBJECT:
 
       return {...state, objects: {

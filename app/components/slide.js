@@ -8,9 +8,10 @@ import { getColor } from '../utils/color';
 export default class Slide extends React.Component {
 
   static propTypes = {
-     styles: React.PropTypes.object.isRequired,
-     objects: React.PropTypes.array.isRequired,
-     maxWidth: React.PropTypes.number
+    pageSize: React.PropTypes.object.isRequired,
+    styles: React.PropTypes.object.isRequired,
+    objects: React.PropTypes.array.isRequired,
+    maxWidth: React.PropTypes.number
   };
 
   render() {
@@ -32,20 +33,21 @@ export default class Slide extends React.Component {
 
     const theme = master.props["CREATE_THEME"][1];
 
+    const templateObjects = _.filter(template.objects || [], o => !o.styles[OBJECT_STYLES.PLACEHOLDER_TYPE])
+    const masterObjects = _.filter(master.objects || [], o => !o.styles[OBJECT_STYLES.PLACEHOLDER_TYPE])
+
     return (
       <div className={css['slide-wrapper']} style={wrapStyle}>
         <div className={css['slide-transform']} style={{transform: `scale(${scale})`}}>
           <div className={css.slide} style={style}>
             {objects.map(o => 
-              <SObject {...o} zIndex={o.zIndex + 300000} key={o.id} 
-                template={find(template.objects, o2 => 
-                  o.styles[OBJECT_STYLES.INHERITED_STYLES] == o2.styles[OBJECT_STYLES.INHERITED_STYLES])}
-                master={find(master.objects, o2 => 
-                  o.styles[OBJECT_STYLES.INHERITED_STYLES] == o2.styles[OBJECT_STYLES.INHERITED_STYLES])}
-                theme={theme} />
+              <SObject {...o} zIndex={o.zIndex + 300000} theme={theme} key={o.id} />
             )}
-            {(template.objects || []).map(o => 
+            {templateObjects.map(o => 
               <SObject {...o} zIndex={o.zIndex + 150000} theme={theme} key={o.id} />
+            )}
+            {masterObjects.map(o => 
+              <SObject {...o} zIndex={o.zIndex} theme={theme} key={o.id} />
             )}
           </div>
         </div>
@@ -73,9 +75,9 @@ export default class Slide extends React.Component {
   }
 
   buildStyle() {
-    const { template, master, styles } = this.props;
+    const { template, master, styles, pageSize } = this.props;
     return {
-      width: 960, height: 600,
+      width: pageSize.width / 381, height: pageSize.height / 381,
       ...this.customStyles(master.styles),
       ...this.customStyles(template.styles),
       ...this.customStyles(styles),
