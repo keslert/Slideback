@@ -78,7 +78,7 @@ function parse(json) {
       return { action: C.NO_OP, type: 'Set Language' };
     default:
       console.log(`Unrecognized action ${json[0]}`);
-      return;
+      return { action: C.NO_OP, type: json[0]};
   }
 }
 

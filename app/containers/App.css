@@ -68,10 +68,6 @@
   box-sizing: border-box;
 }
 
-.object p {
-  margin: 0;
-}
-
 .object img {
   /*position: absolute;
   top: 0;
@@ -81,4 +77,8 @@
 
 .text { 
   width: 100%;
+  cursor: default;
+}
+.text span {
+  word-break: break-all;
 }
