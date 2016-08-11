@@ -29,7 +29,7 @@ export default class ControlBar extends React.Component {
 
       if(i < commands.length) {
 
-        let delay = 500;
+        let delay = 750;
         if(_commands.action == ACTION_CONSTANTS.APPEND_TEXT ||
            _commands.action == ACTION_CONSTANTS.DELETE_TEXT)
         {

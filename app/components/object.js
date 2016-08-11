@@ -104,7 +104,7 @@ export default class SObject extends React.Component {
         }
         
       case OBJECT_TYPES.TEXT_BOX:
-        return { padding: 10 }
+        return { padding: 10, border: '1px dashed #ddd' }
       case OBJECT_TYPES.IMAGE:
       case OBJECT_TYPES.RECTANGLE:
       case OBJECT_TYPES.ROUNDED_RECTANGLE:
@@ -135,6 +135,7 @@ export default class SObject extends React.Component {
           return { width: this.props.bb[0] / 381 * value }
         case OBJECT_STYLES.HEIGHT:
           return { height: this.props.bb[3] / 381 * value }
+        case OBJECT_STYLES.FILL_COLOR:
         case OBJECT_STYLES.FILL:
           const color = getColor(
             value,
@@ -157,10 +158,7 @@ export default class SObject extends React.Component {
         case OBJECT_STYLES.TEXT:
           return {}
         case OBJECT_STYLES.IMAGE_URL:
-          const imageID = obj.styles[OBJECT_STYLES.DESCRIPTION];
-          const docID = '1SRz_o7R14dH-w32_gWhHwj6Rppnhv5Qnjnq94orSElE';
-          const url = `https://docs.google.com/presentation/d/${docID}/filesystem:https:/docs.google.com/persistent/docs/documents/${docID}/image/${imageID}`;
-          return { image: value };
+          return { image: value, background: 'none' };
           // return { background: `url(${value})` }
         case OBJECT_STYLES.LINE_DASH:
           return
@@ -183,14 +181,15 @@ export default class SObject extends React.Component {
 
   buildStyles() {
 
-    const { template, master, modified } = this.props;
+    const { template, master, modified, deleted } = this.props;
     return extend(
       this.calculatePositionAndSize(),
       this.defaultStyles(),
       this.customStyles(master),
       this.customStyles(template),
       this.customStyles(this.props),
-      modified ? { boxShadow: '0 0 4px 4px green' } : {}
+      modified ? { boxShadow: '0 0 4px 4px green' } : {},
+      deleted ? { boxShadow: '0 0 4px 4px red', background: 'rgba(255,0,0,0.1)' } : {}
     )
   }
 }

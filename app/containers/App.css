@@ -80,5 +80,5 @@
   cursor: default;
 }
 .text span {
-  word-break: break-all;
+  word-wrap: break-word;
 }

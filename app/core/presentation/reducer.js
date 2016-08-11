@@ -30,9 +30,17 @@ export function presentationReducer(state = initialState, {type, payload}) {
   switch (type) {
     case RUN_COMMANDS:
 
-      const _state = {...state,
-        slides: _.keyBy(_.map(state.slides, s => _.omit(s, 'modified')), 'id'),
-        objects: _.keyBy(_.map(state.objects, o => _.omit(o, 'modified')), 'id'),
+      const clean = (items) => (
+        _.chain(items)
+        .filter(item => !item.deleted)
+        .map(item => _.omit(item, 'modified'))
+        .keyBy('id')
+        .value()
+      )
+
+      const _state = {...state, 
+        slides: clean(state.slides), 
+        objects: clean(state.objects)
       }
 
       const _payload = Array.isArray(payload) ? payload : [payload]
@@ -46,8 +54,10 @@ function reduce(state, payload) {
   let obj, text, slide, slides, objs;
   switch (payload.action) {
     case ACTION_CONSTANTS.DELETE_OBJECTS:
-
-      return {...state, objects: _.omit(state.objects, payload.object_ids)};
+      objs = _.keyBy(_.map(payload.object_ids, object_id => (
+        {...state.objects[object_id], modified: true, deleted: true}
+      )), 'id')
+      return {...state, objects: {...state.objects, ...objs}};
     case ACTION_CONSTANTS.RESIZE_PAGE:
 
       return {...state, pageSize: {width: payload.width, height: payload.height}};
@@ -97,7 +107,11 @@ function reduce(state, payload) {
       return {...state, slides: {...state.slides, ...slides}}
 
     case ACTION_CONSTANTS.DELETE_SLIDE:
-      return {...state, slides: _.omit(state.slides, payload.slide_id)}
+      slide = state.slides[payload.slide_id];
+
+      return {...state, slides: {...state.slides,
+        [payload.slide_id]: {...slide, modified: true, deleted: true}
+      }}
     
     case ACTION_CONSTANTS.REARRANGE_SLIDE:
       slides = _.sortBy(_.filter(state.slides, s => s.type == SLIDE_TYPES.NORMAL), 'zIndex');
