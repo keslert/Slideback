@@ -65,11 +65,17 @@
   border: 1px dashed #ddd;
   display: flex;
   box-sizing: border-box;
-  padding: 10px;
 }
 
 .object p {
   margin: 0;
+}
+
+.object img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 .text { 

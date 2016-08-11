@@ -43,9 +43,10 @@ export default class Text extends React.Component {
 
 
 
-    const style = _.pick(this.calculateStylesForIndex(index + text.length), 'textAlign');
+    const lineStyles = this.calculateStylesForIndex(index + text.length);
+    const _lineStyles = { textAlign: lineStyles.textAlign, minHeight: lineStyles.fontSize }
     return (
-      <div style={style} key={index}>
+      <div style={_lineStyles} key={index}>
         {spans.slice(1).map(s => 
           <span style={s.style} key={`${s.start}-${s.end}`}>
             {text.slice(s.start, s.end)}

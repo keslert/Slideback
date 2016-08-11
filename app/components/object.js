@@ -3,7 +3,9 @@ import Text from './text';
 import css from '../containers/App.css';
 import { OBJECT_TYPES, OBJECT_STYLES } from '../utils/parser';
 import { getColor } from '../utils/color';
-import { extend, map } from 'lodash';
+import { extend, map, pick } from 'lodash';
+import { getImage } from '../utils/image';
+import BlobImage from 'react-image-file';
 
 export default class SObject extends React.Component {
 
@@ -22,24 +24,42 @@ export default class SObject extends React.Component {
   render() {
     const { theme, master, template, text, textStyles } = this.props;
 
+    const styles = this.buildStyles();
     return (
-      <div className={css.object} style={this.buildStyle()}>
+      <div className={css.object} style={styles}>
         <Text text={text} 
               master={master.textStyles}
               template={template.textStyles}
               styles={textStyles}
               theme={theme} />
+        {this.renderImage(styles)}
       </div>
     );
   }
+
+  renderImage(styles) {
+    if(styles['image']) {
+      const blob = getImage(styles['image']);
+      if(blob) {
+        return <img src={blob} />
+      }
+    }
+  }
+
+  // 207.2522,0,0,208.3677,2050.0001,1955
+  // 2.1502,0,0,1.5819,2050,1955
+
+  // [381.0,0.0,0.0,381.0,29527.5,16573.5],[8,805,9,453
+
+  // [225.83970642089844,0.0,0.0,225.83970642089844,42294.765625,0.0], [8,1245,9,911]
 
   calculatePositionAndSize() {
     const { bb } = this.props;
 
     let top = bb[5] / 381;
     let left = bb[4] / 381;
-    let width = bb[0] * 315;
-    let height = bb[3] * 315;
+    let width = bb[0] * 315.125;
+    let height = bb[3] * 315.125;
     let transform = '';
 
     if(width < 0) {
@@ -84,6 +104,7 @@ export default class SObject extends React.Component {
         }
         
       case OBJECT_TYPES.TEXT_BOX:
+        return { padding: 10 }
       case OBJECT_TYPES.IMAGE:
       case OBJECT_TYPES.RECTANGLE:
       case OBJECT_TYPES.ROUNDED_RECTANGLE:
@@ -111,8 +132,9 @@ export default class SObject extends React.Component {
 
       switch(type) {
         case OBJECT_STYLES.WIDTH:
+          return { width: this.props.bb[0] / 381 * value }
         case OBJECT_STYLES.HEIGHT:
-          return
+          return { height: this.props.bb[3] / 381 * value }
         case OBJECT_STYLES.FILL:
           const color = getColor(
             value,
@@ -135,7 +157,11 @@ export default class SObject extends React.Component {
         case OBJECT_STYLES.TEXT:
           return {}
         case OBJECT_STYLES.IMAGE_URL:
-          return { background: url(value) }
+          const imageID = obj.styles[OBJECT_STYLES.DESCRIPTION];
+          const docID = '1SRz_o7R14dH-w32_gWhHwj6Rppnhv5Qnjnq94orSElE';
+          const url = `https://docs.google.com/presentation/d/${docID}/filesystem:https:/docs.google.com/persistent/docs/documents/${docID}/image/${imageID}`;
+          return { image: value };
+          // return { background: `url(${value})` }
         case OBJECT_STYLES.LINE_DASH:
           return
         case OBJECT_STYLES.VERTICAL_ALIGNMENT: // 0=top, 1=middle, 2=bottom
@@ -155,7 +181,7 @@ export default class SObject extends React.Component {
     }))
   }
 
-  buildStyle() {
+  buildStyles() {
 
     const { template, master } = this.props;
     return extend(

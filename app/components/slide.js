@@ -33,7 +33,7 @@ export default class Slide extends React.Component {
 
     const theme = master.props["CREATE_THEME"][1];
 
-    const templateObjects = _.filter(template.objects || [], o => !o.styles[OBJECT_STYLES.PLACEHOLDER_TYPE])
+    const templateObjects = _.filter(template ? template.objects : [], o => !o.styles[OBJECT_STYLES.PLACEHOLDER_TYPE])
     const masterObjects = _.filter(master.objects || [], o => !o.styles[OBJECT_STYLES.PLACEHOLDER_TYPE])
 
     return (
@@ -55,7 +55,7 @@ export default class Slide extends React.Component {
     );
   }
 
-  customStyles(styles) {
+  customStyles(styles = []) {
     return extend(...map(styles, (value, type) => {
       switch(type) {
         case OBJECT_STYLES.FILL:
@@ -75,12 +75,12 @@ export default class Slide extends React.Component {
   }
 
   buildStyle() {
-    const { template, master, styles, pageSize } = this.props;
-    return {
-      width: pageSize.width / 381, height: pageSize.height / 381,
-      ...this.customStyles(master.styles),
-      ...this.customStyles(template.styles),
-      ...this.customStyles(styles),
-    }
+    const { template = {}, master = {}, styles, pageSize } = this.props;
+    return extend(
+      { width: pageSize.width / 381, height: pageSize.height / 381 },
+      this.customStyles(master.styles),
+      this.customStyles(template.styles),
+      this.customStyles(styles),
+    )
   }
 }

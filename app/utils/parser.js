@@ -26,6 +26,7 @@ export default function(raw) {
     commands: parse(json[0]),
     timestamp: json[3],
   }));
+  console.log(actions);
 
   return actions;
 }
@@ -71,6 +72,8 @@ function parse(json) {
       return createListEntity(json);
     case 42:
       return styleListEntity(json);
+    case 44:
+      return { action: C.NO_OP, type: 'Object description' };
     case 45:
       return { action: C.NO_OP, type: 'Set Language' };
     default:
