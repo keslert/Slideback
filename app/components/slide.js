@@ -75,12 +75,13 @@ export default class Slide extends React.Component {
   }
 
   buildStyle() {
-    const { template = {}, master = {}, styles, pageSize } = this.props;
+    const { template = {}, master = {}, styles, pageSize, modified } = this.props;
     return extend(
       { width: pageSize.width / 381, height: pageSize.height / 381 },
       this.customStyles(master.styles),
       this.customStyles(template.styles),
       this.customStyles(styles),
+      modified ? { boxShadow: '0 0 4px 4px green' } : {}
     )
   }
 }

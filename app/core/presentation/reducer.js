@@ -29,8 +29,14 @@ export const initialState = {
 export function presentationReducer(state = initialState, {type, payload}) {
   switch (type) {
     case RUN_COMMANDS:
+
+      const _state = {...state,
+        slides: _.keyBy(_.map(state.slides, s => _.omit(s, 'modified')), 'id'),
+        objects: _.keyBy(_.map(state.objects, o => _.omit(o, 'modified')), 'id'),
+      }
+
       const _payload = Array.isArray(payload) ? payload : [payload]
-      return _.reduce(_payload, reduce, state);
+      return _.reduce(_payload, reduce, _state);
     default:
       return state;
   }
@@ -53,14 +59,15 @@ function reduce(state, payload) {
           styles: {...defaultObjectStyles(payload.type), ...payload.styles}, 
           text: '', 
           textStyles: [], 
-          zIndex: zIndex++
+          zIndex: zIndex++,
+          modified: true,
         }
       }}
 
     case ACTION_CONSTANTS.STYLE_OBJECTS:
       objs = _.keyBy(_.map(payload.object_ids, object_id => {
         obj = state.objects[object_id];
-        return {...obj, styles: {...obj.styles, ...payload.styles}}
+        return {...obj, styles: {...obj.styles, ...payload.styles}, modified: true}
       }), 'id');
       return {...state, objects: {...state.objects, ...objs}}
         
@@ -73,17 +80,17 @@ function reduce(state, payload) {
     case ACTION_CONSTANTS.TRANSFORM_OBJECT:
       obj = state.objects[payload.object_id];
       return {...state, objects: {...state.objects,
-        [payload.object_id]: {...obj, bb: payload.bb}
+        [payload.object_id]: {...obj, bb: payload.bb, modified: true}
       }}
 
     case ACTION_CONSTANTS.SLIDE_STYLE:
       slide = state.slides[payload.slide_id];
       return {...state, slides: {...state.slides,
-        [payload.slide_id]: {...slide, styles: {...slide.styles, ...payload.styles}} 
+        [payload.slide_id]: {...slide, styles: {...slide.styles, ...payload.styles}, modified: true} 
       }}
 
     case ACTION_CONSTANTS.CREATE_SLIDE:
-      slide = {..._.omit(payload, 'action'), styles: {}, zIndex: zIndex++};
+      slide = {..._.omit(payload, 'action'), styles: {}, zIndex: zIndex++, modified: true};
       slides = _.sortBy([slide, ..._.filter(state.slides, s => s.type == payload.type)], 'zIndex');
       slides = rearrangeSlides(slides, _.size(slides) - 1, payload.index);
 
@@ -120,6 +127,8 @@ function reduce(state, payload) {
         return style;
       })
 
+      obj.modified = true;
+
       return {...state, objects: {...state.objects,
         [payload.object_id]: obj
       }}
@@ -147,6 +156,7 @@ function reduce(state, payload) {
           return style;
         }
       }), style => style.end_index > style.start_index)
+      obj.modified = true;
 
       return {...state, objects: {...state.objects,
         [payload.object_id]: obj
@@ -155,7 +165,7 @@ function reduce(state, payload) {
     case ACTION_CONSTANTS.STYLE_TEXT:
       obj = state.objects[payload.object_id];
       return {...state, objects: {...state.objects,
-        [payload.object_id]: {...obj, 
+        [payload.object_id]: {...obj, modified: true,
           textStyles: [...obj.textStyles, _.omit(payload, 'action')]
         }
       }}
@@ -167,7 +177,7 @@ function reduce(state, payload) {
     case ACTION_CONSTANTS.CHANGE_SLIDE_PROPERTIES:
       slides = _.keyBy(_.map(payload.slide_ids, slide_id => {
         slide = state.slides[slide_id];
-        return {...slide, props: _.extend({}, slide.props, payload.props)}
+        return {...slide, props: _.extend({}, slide.props, payload.props), modified: true}
       }), 'id');
 
       return {...state, slides: {...state.slides, ...slides}}

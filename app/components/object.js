@@ -183,13 +183,14 @@ export default class SObject extends React.Component {
 
   buildStyles() {
 
-    const { template, master } = this.props;
+    const { template, master, modified } = this.props;
     return extend(
       this.calculatePositionAndSize(),
       this.defaultStyles(),
       this.customStyles(master),
       this.customStyles(template),
       this.customStyles(this.props),
+      modified ? { boxShadow: '0 0 4px 4px green' } : {}
     )
   }
 }

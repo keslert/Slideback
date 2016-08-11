@@ -1,7 +1,7 @@
 import React from 'react';
 import Slide from './slide';
 import css from '../containers/App.css';
-import { filter } from 'lodash';
+import { filter, sortBy, find, some } from 'lodash';
 import { SLIDE_TYPES } from '../utils/parser';
 export default class Workspace extends React.Component {
 
@@ -13,8 +13,11 @@ export default class Workspace extends React.Component {
 
     const { slides } = this.props;
 
-    const filtered = filter(slides, s => s.type == SLIDE_TYPES.NORMAL);
-    const slide = filtered[0];
+    const filtered = sortBy(filter(slides, s => s.type == SLIDE_TYPES.NORMAL), 'zIndex');
+
+    const slide = find(filtered, s => 
+      s.modified || some(s.objects, 'modified')
+    ) || filtered[0]
 
     return (
       <div className={css.workspace}>
