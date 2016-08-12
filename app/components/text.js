@@ -19,6 +19,10 @@ export default class Text extends React.Component {
     template: [],
   }
 
+  shouldComponentUpdate(nextProps) {
+    return this.props.text != nextProps.text;
+  }
+
   renderLine({text, index}) {
     const styles = _.map(text.split(''), (char, char_index) => 
       this.calculateStylesForIndex(index + char_index)
@@ -41,10 +45,17 @@ export default class Text extends React.Component {
       }] 
     }, [{start: 0, end: 0, style: null}])
 
+    // const spans = _.map(text.split(''), (c, i) => ({
+    //   start: i,
+    //   end: i + 1,
+    //   style: {}
+    // }))
+
 
 
     const lineStyles = this.calculateStylesForIndex(index + text.length);
     const _lineStyles = { textAlign: lineStyles.textAlign, minHeight: lineStyles.fontSize }
+    // const _lineStyles = {};
     return (
       <div style={_lineStyles} key={index}>
         {spans.slice(1).map(s => 

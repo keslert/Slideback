@@ -15,13 +15,15 @@ export default class Workspace extends React.Component {
 
     const filtered = sortBy(filter(slides, s => s.type == SLIDE_TYPES.NORMAL), 'zIndex');
 
+    const maxWidth = Math.min(960, window.innerWidth - 300); 
+
     const slide = find(filtered, s => 
       s.modified || some(s.objects, 'modified')
     ) || filtered[0]
 
     return (
       <div className={css.workspace}>
-        <Slide {...slide} />
+        <Slide {...slide} maxWidth={maxWidth} />
       </div>
     );
   }

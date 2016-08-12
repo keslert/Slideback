@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
-import { historyReducer } from './history/reducer';
+import { systemReducer } from './system/reducer';
 import { presentationReducer } from './presentation/reducer';
 
 export default combineReducers({
-  history: historyReducer,
+  system: systemReducer,
   presentation: presentationReducer
 })

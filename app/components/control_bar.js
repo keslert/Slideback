@@ -1,14 +1,29 @@
 import React from 'react';
-import { connect } from 'redux';
+
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 
 import css from '../containers/App.css';
 import { ACTION_CONSTANTS } from '../utils/parser';
 
+import * as SystemActions from '../core/system/actions';
+
+@connect(
+  state => ({
+    queue: state.system.commands,
+    index: state.system.index,
+    play: state.system.play,
+    speed: state.system.speed,
+  }),
+  dispatch => ({
+    ...bindActionCreators(SystemActions, dispatch)
+  })
+)
 export default class ControlBar extends React.Component {
 
   static propTypes = {
-    commands: React.PropTypes.array.isRequired,
-    commandsIndex: React.PropTypes.number.isRequired,
+    queue: React.PropTypes.array.isRequired,
+    index: React.PropTypes.number.isRequired,
     runCommands: React.PropTypes.func.isRequired,
   }
 
@@ -18,38 +33,75 @@ export default class ControlBar extends React.Component {
   }
 
   componentWillMount() {
-    const { commands, runCommands } = this.props;
+    this.update();
+  }
 
-    let i = 0;
+  update() {
+    const { queue, index, play } = this.props;
+    const { runCommands, setIndex } = this.props;
 
-
-    function next() {
-      const _commands = commands[i++].commands; 
-      runCommands(_commands);
-
-      if(i < commands.length) {
-
-        let delay = 750;
-        if(_commands.action == ACTION_CONSTANTS.APPEND_TEXT ||
-           _commands.action == ACTION_CONSTANTS.DELETE_TEXT)
-        {
-          delay = 50;
-        }
-
-        setTimeout(() => next(), delay);
-      }
+    if(!play || index >= queue.length) {
+      return;
     }
-    next();
 
+    const commands = queue[index].commands;
+    runCommands(commands);
+
+    const nextIndex = index + 1;
+    setIndex(nextIndex);
+
+    if(nextIndex < queue.length) {
+      let delay;
+      const nextCommands = queue[nextIndex].commands;
+      const { APPEND_TEXT, DELETE_TEXT } = ACTION_CONSTANTS;
+      if((commands.action == APPEND_TEXT || commands.action == DELETE_TEXT) &&
+         (nextCommands.action == APPEND_TEXT || nextCommands.action == DELETE_TEXT)) {
+        delay = 50;
+      }
+
+      this.delayedUpdate(delay);
+    }
+  }
+
+  togglePlay() {
+    const { play, setPlay } = this.props;
+
+    clearTimeout(this.handler);
+    setPlay(!play);
+    !play && this.delayedUpdate(1);
+  }
+
+  toggleSpeed() {
+    const { speed, setSpeed } = this.props;
+    setSpeed(speed >= 8 ? 0.5 : speed * 2)
+  }
+
+  delayedUpdate(delay = 1000) {
+    const { speed } = this.props;
+    this.handler = setTimeout(() => this.update(), delay / speed);
   }
 
   render() {
+
+    const { play, index, queue, speed } = this.props;
+
+    const menuItem = css['menu-item'];
     return (
       <div className={css['control-bar']}>
-        <ul>
-          <li className="logo">Slideback</li>
-          <li><i className="fa fa-play"></i></li>
-        </ul>
+        <div className={menuItem}>Slideback</div>
+        <div className={menuItem}>
+          <button className={css.primary} onClick={() => this.togglePlay()}>
+            {play ? "Pause" : "Play"} 
+          </button>
+        </div>
+
+        <div className={menuItem}>
+          <button onClick={() => this.toggleSpeed()}>
+            {`Speed ${speed}x`}
+          </button>
+        </div>
+
+        <div className={menuItem}>({index}/{queue.length})</div> 
       </div>
     );
   }

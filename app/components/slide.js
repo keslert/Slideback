@@ -14,6 +14,10 @@ export default class Slide extends React.Component {
     maxWidth: React.PropTypes.number
   };
 
+  shouldComponentUpdate(nextProps) {
+    return !!(nextProps.modified || this.props.modified || _.some(this.props.objects, o => o.modified))
+  }
+
   render() {
 
     const { objects, template, master } = this.props;

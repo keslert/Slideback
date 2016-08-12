@@ -15,8 +15,8 @@ import { SLIDE_TYPES, SLIDE_PROPERTIES, OBJECT_STYLES } from '../utils/parser';
     pageSize: state.presentation.pageSize,
     slides: state.presentation.slides,
     objects: state.presentation.objects,
-    commands: state.history.commands,
-    commandsIndex: state.history.index
+    commands: state.system.commands,
+    commandsIndex: state.system.index
   }),
   dispatch => ({
     runCommands(commands) {
@@ -28,7 +28,7 @@ export default class App extends Component {
 
   render() {
 
-    const { slides, objects, commands, commandsIndex, pageSize } = this.props;
+    const { slides, objects, pageSize } = this.props;
     const { runCommands } = this.props;
 
     let combined = _.map(slides, s => ({...s,
@@ -76,10 +76,7 @@ export default class App extends Component {
 
     return (
       <div className={style.app}>
-        <ControlBar commands={commands}
-                    runCommands={runCommands}
-                    commandsIndex={commandsIndex}
-                    />
+        <ControlBar runCommands={runCommands}   />
         <div className={style.viewer}>
           <Filmstrip slides={combined} />
           <Workspace slides={combined} />

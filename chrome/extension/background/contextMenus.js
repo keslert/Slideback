@@ -1,5 +1,5 @@
 let windowId = 0;
-const CONTEXT_MENU_ID = 'example_context_menu';
+const CONTEXT_MENU_ID = 'slideback_context_menu';
 
 function closeIfExist() {
   if (windowId > 0) {
@@ -13,7 +13,7 @@ function popWindow(type) {
   const options = {
     type: 'popup',
     left: 100, top: 100,
-    width: 800, height: 475
+    width: 1000, height: 600
   };
   if (type === 'open') {
     options.url = 'window.html';
@@ -25,11 +25,11 @@ function popWindow(type) {
 
 chrome.contextMenus.create({
   id: CONTEXT_MENU_ID,
-  title: 'React Chrome Extension Example',
+  title: 'Slideback',
   contexts: ['all'],
-  documentUrlPatterns: [
-    'https://github.com/*',
-  ]
+  // documentUrlPatterns: [
+  //   'https://github.com/*',
+  // ]
 });
 
 chrome.contextMenus.onClicked.addListener((event) => {
@@ -37,5 +37,3 @@ chrome.contextMenus.onClicked.addListener((event) => {
     popWindow('open');
   }
 });
-
-popWindow('open');

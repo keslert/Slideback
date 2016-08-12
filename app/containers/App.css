@@ -11,10 +11,11 @@
   border-bottom: 1px solid #d9d9d9;
   display: flex;
   align-items: center;
+  flex-direction: row;
 }
 
-.control-bar li {
-  padding: 0 10px;
+.control-bar .menu-item {
+  padding: 0 5px;
 }
 
 .viewer {
@@ -24,7 +25,7 @@
 }
 
 .filmstrip {
-  width: 219px;
+  width: 220px;
   background: #eee;
   border-right: 1px solid #d9d9d9;
   padding: 15px;
@@ -82,3 +83,23 @@
 .text span {
   word-wrap: break-word;
 }
+
+button {
+  border: none;
+  background: #b3b3b3;
+  color: #fff;
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+button:hover {
+  background: #bbb;
+}
+
+button.primary {
+  background: #f44336;
+}
+button.primary:hover {
+  background: #fd594d;
+}
+

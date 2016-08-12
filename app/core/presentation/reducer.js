@@ -52,6 +52,7 @@ export function presentationReducer(state = initialState, {type, payload}) {
 
 function reduce(state, payload) {
   let obj, text, slide, slides, objs;
+
   switch (payload.action) {
     case ACTION_CONSTANTS.DELETE_OBJECTS:
       objs = _.keyBy(_.map(payload.object_ids, object_id => (

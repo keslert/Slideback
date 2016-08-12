@@ -68,6 +68,8 @@ function parse(json) {
       return styleText(json);
     case 18:
       return changeSlideProperties(json);
+    case 40:
+      return parse(json[1]);
     case 41:
       return createListEntity(json);
     case 42:

@@ -21,6 +21,10 @@ export default class SObject extends React.Component {
     template: {}
   }
 
+  shouldComponentUpdate(nextProps) {
+    return !!(nextProps.modified || this.props.modified)
+  }
+
   render() {
     const { theme, master, template, text, textStyles } = this.props;
 
@@ -46,15 +50,8 @@ export default class SObject extends React.Component {
     }
   }
 
-  // 207.2522,0,0,208.3677,2050.0001,1955
-  // 2.1502,0,0,1.5819,2050,1955
-
-  // [381.0,0.0,0.0,381.0,29527.5,16573.5],[8,805,9,453
-
-  // [225.83970642089844,0.0,0.0,225.83970642089844,42294.765625,0.0], [8,1245,9,911]
-
   calculatePositionAndSize() {
-    const { bb } = this.props;
+    const { bb, zIndex } = this.props;
 
     let top = bb[5] / 381;
     let left = bb[4] / 381;
@@ -73,7 +70,7 @@ export default class SObject extends React.Component {
       transform += 'scaleY(-1) ';
     }
 
-    return { top, left, width, height, transform }
+    return { top, left, width, height, transform, zIndex }
   }
 
   defaultStyles() {
@@ -101,11 +98,13 @@ export default class SObject extends React.Component {
           borderTop: `${bb.width / 2}px solid transparent`,
           borderLeft: `${bb.height / 2}px solid ${color}`,
           borderRight: `${bb.height / 2}px solid transparent`,
+          background: 'transparent',
         }
         
       case OBJECT_TYPES.TEXT_BOX:
         return { padding: 10, border: '1px dashed #ddd' }
       case OBJECT_TYPES.IMAGE:
+        return { backgroundColor: 'transparent' } 
       case OBJECT_TYPES.RECTANGLE:
       case OBJECT_TYPES.ROUNDED_RECTANGLE:
       case OBJECT_TYPES.LINE:
@@ -184,12 +183,12 @@ export default class SObject extends React.Component {
     const { template, master, modified, deleted } = this.props;
     return extend(
       this.calculatePositionAndSize(),
-      this.defaultStyles(),
       this.customStyles(master),
       this.customStyles(template),
       this.customStyles(this.props),
       modified ? { boxShadow: '0 0 4px 4px green' } : {},
-      deleted ? { boxShadow: '0 0 4px 4px red', background: 'rgba(255,0,0,0.1)' } : {}
+      deleted ? { boxShadow: '0 0 4px 4px red', background: 'rgba(255,0,0,0.1)' } : {},
+      this.defaultStyles()
     )
   }
 }
