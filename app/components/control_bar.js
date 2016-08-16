@@ -36,7 +36,8 @@ export default class ControlBar extends React.Component {
   }
 
   componentWillMount() {
-    this.update();
+    const { play, setPlay } = this.props;
+    this.update(true);
   }
 
   isTextAction(command) {
@@ -48,11 +49,11 @@ export default class ControlBar extends React.Component {
 
 
 
-  update() {
+  update(force) {
     const { queue, index, play, realtime, collapse } = this.props;
     const { runCommands, setIndex } = this.props;
 
-    if(!play || index >= queue.length) {
+    if((!play && !force) || index >= queue.length) {
       return;
     }
 

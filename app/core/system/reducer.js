@@ -10,10 +10,10 @@ import {
 import parse from '../../utils/parser';
 
 export const initialState = {
-  commands: parse(require('json!../../../data/dreams.json')),
+  commands: parse(require('json!../../../data/gehry.json')),
   index: 0,
   speed: 2,
-  play: true,
+  play: false,
   realtime: false,
   collapse: true,
 };

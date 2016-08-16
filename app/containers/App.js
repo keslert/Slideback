@@ -28,7 +28,7 @@ export default class App extends Component {
 
   render() {
 
-    const { slides, objects, pageSize } = this.props;
+    const { slides, objects, pageSize, commands, commandsIndex } = this.props;
     const { runCommands } = this.props;
 
     let combined = _.map(slides, s => ({...s,
@@ -79,7 +79,7 @@ export default class App extends Component {
         <ControlBar runCommands={runCommands}   />
         <div className={style.viewer}>
           <Filmstrip slides={combined} />
-          <Workspace slides={combined} />
+          <Workspace slides={combined} commands={commands} commandsIndex={commandsIndex} />
         </div>
       </div>
     );
