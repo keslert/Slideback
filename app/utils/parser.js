@@ -1,5 +1,6 @@
 export const ACTION_CONSTANTS = {
   NO_OP: 'NO_OP',
+  BATCH_COMMANDS: 'BATCH_COMMANDS',
   DELETE_OBJECTS: 'DELETE_OBJECTS',
   CREATE_GROUP: 'CREATE_GROUP',
   DELETE_GROUP: 'DELETE_GROUP',
@@ -24,9 +25,8 @@ const C = ACTION_CONSTANTS;
 export default function(raw) {
   const actions = _.map(raw.changelog, json => ({
     commands: parse(json[0]),
-    timestamp: json[3],
+    timestamp: json[1],
   }));
-  console.log(actions);
 
   return actions;
 }
@@ -43,7 +43,7 @@ function parse(json) {
     case 3:
       return createObject(json);
     case 4:
-      return json[1].map(parse);
+      return batchCommands(json);
     case 5:
       return styleObject(json);
     case 6:
@@ -69,7 +69,7 @@ function parse(json) {
     case 18:
       return changeSlideProperties(json);
     case 40:
-      return parse(json[1]);
+      return parse(json[1]);  // No Clue...
     case 41:
       return createListEntity(json);
     case 42:
@@ -192,6 +192,31 @@ const _rawToObjectType = {
   '153': OBJECT_TYPES.LINE,
   '154': '?',
   '157': OBJECT_TYPES.VIDEO
+}
+
+/*****************************************************************************
+*  4 | Batch Commands
+******************************************************************************
+[
+  4,
+  [
+    [6,"g15fee194f8_2_0",[1.3268,0,0,0.2642,103263,146611],
+    [6,"g15fee194f8_2_1",[2.3268,0,0,0.2642,103263,146611]
+  ]
+]
+*/
+function batchCommands(json) {
+  const commands = json[1].map(parse);
+
+  return {
+    action: C.BATCH_COMMANDS,
+    type: determineBatchType(commands),
+    commands
+  }
+}
+
+function determineBatchType(commands) {
+  return null;
 }
 
 

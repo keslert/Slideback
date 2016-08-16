@@ -9,6 +9,14 @@ export default class Workspace extends React.Component {
     slides: React.PropTypes.array.isRequired
   }
 
+  componentDidMount() {
+    this.handler = window.addEventListener('resize', () => this.forceUpdate());
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handler);
+  }
+
   render() {
 
     const { slides } = this.props;

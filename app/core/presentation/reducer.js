@@ -44,7 +44,9 @@ export function presentationReducer(state = initialState, {type, payload}) {
       }
 
       const _payload = Array.isArray(payload) ? payload : [payload]
-      return _.reduce(_payload, reduce, _state);
+      // return _.reduce(_payload, reduce, _state);
+
+      return reduce(_state, payload);
     default:
       return state;
   }
@@ -54,6 +56,10 @@ function reduce(state, payload) {
   let obj, text, slide, slides, objs;
 
   switch (payload.action) {
+
+    case ACTION_CONSTANTS.BATCH_COMMANDS:
+      return _.reduce(payload.commands, reduce, state);
+
     case ACTION_CONSTANTS.DELETE_OBJECTS:
       objs = _.keyBy(_.map(payload.object_ids, object_id => (
         {...state.objects[object_id], modified: true, deleted: true}

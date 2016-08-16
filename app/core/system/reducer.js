@@ -4,14 +4,18 @@ import {
   SET_PLAY, 
   SET_INDEX,
   SET_SPEED, 
+  SET_COLLAPSE_COMMANDS,
+  SET_REALTIME,
 } from './constants';
 import parse from '../../utils/parser';
 
 export const initialState = {
-  commands: parse(require('json!../../../data/gehry.json')),
+  commands: parse(require('json!../../../data/dreams.json')),
   index: 0,
-  speed: 1,
+  speed: 2,
   play: true,
+  realtime: false,
+  collapse: true,
 };
 
 export function systemReducer(state = initialState, {type, payload}) {
@@ -25,7 +29,11 @@ export function systemReducer(state = initialState, {type, payload}) {
     case SET_INDEX:
       return {...state, index: payload }
     case SET_SPEED:
-      return {...state, speed: payload } 
+      return {...state, speed: payload }
+    case SET_REALTIME:
+      return {...state, realtime: payload }
+    case SET_COLLAPSE_COMMANDS:
+      return {...state, collapse: payload } 
 
     default:
       return state;

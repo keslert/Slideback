@@ -3,6 +3,8 @@ import {
   SET_PLAY, 
   SET_INDEX,
   SET_SPEED, 
+  SET_COLLAPSE_COMMANDS,
+  SET_REALTIME,
 } from './constants';
 
 export function addCommands(commands) {
@@ -30,5 +32,19 @@ export function setSpeed(speed) {
   return {
     type: SET_SPEED,
     payload: speed
+  }
+}
+
+export function setCollapseCommands(bool) {
+  return {
+    type: SET_COLLAPSE_COMMANDS,
+    payload: bool
+  }
+}
+
+export function setRealtime(bool) {
+  return {
+    type: SET_REALTIME,
+    payload: bool
   }
 }

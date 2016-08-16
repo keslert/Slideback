@@ -34,6 +34,7 @@
 .filmstrip .slide-wrapper {
   border: 2px solid #ddd;
   margin: 0 auto 10px;
+  overflow: hidden;
 }
 
 .workspace {
@@ -97,9 +98,30 @@ button:hover {
 }
 
 button.primary {
-  background: #f44336;
+  background: #e05843;
 }
 button.primary:hover {
-  background: #fd594d;
+  background: #ec634d;
 }
 
+/*.checkbox input[type="checkbox"] {
+  display:none;
+}
+
+.checkbox label {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox label:before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border: 1px solid #d2d2d2;
+  border-radius: 2px;
+  display: inline-block;
+  margin-right: 3px;
+}
+.checkbox input[type="checkbox"]:checked + label:before {
+  background: #e05843;
+}*/
