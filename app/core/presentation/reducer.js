@@ -42,30 +42,22 @@ export function presentationReducer(state = initialState, {type, payload}) {
         .value()
       )
 
-      if(payload == 0) {
-        const _state = {...initialState, actionQueueIndex: 1};
-        return reduce(_state, state.actionQueue[payload].action);
-      } else if(payload >= state.actionQueueIndex) {
-        const actions = state.actionQueue.slice(state.actionQueueIndex, payload + 1);
-        const _state = {...state, 
-          slides: clean(state.slides), 
-          objects: clean(state.objects),
-          actionQueueIndex: payload + 1,
-        }
-        return _.reduce(_.map(actions, 'action'), reduce, _state);
+      let actions, _state;
+      if(payload < state.actionQueueIndex) {
+        actions = state.actionQueue.slice(0, payload);
+        _state = initialState;
+      } else {
+        actions = state.actionQueue.slice(state.actionQueueIndex, payload);
+        _state = state;
       }
-      
-      const actions = state.actionQueue.slice(0, payload);
 
-      let _state = _.reduce(_.map(actions, 'action'), reduce, initialState);
+      _state = _.reduce(_.map(actions, 'action'), reduce, _state);
       _state = {..._state,
         slides: clean(_state.slides),
         objects: clean(_state.objects),
         actionQueueIndex: payload + 1
       }
       return reduce(_state, state.actionQueue[payload].action);
-
-      
       
     default:
       return state;
