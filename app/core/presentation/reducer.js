@@ -1,12 +1,14 @@
 /* eslint-disable no-case-declarations */
-import { RUN_COMMANDS } from './constants';
+import { SET_QUEUE_INDEX } from './constants';
 import { 
   ACTION_CONSTANTS, 
   SLIDE_TYPES, 
   OBJECT_TYPES,
   OBJECT_STYLES 
 } from '../../utils/parser';
+import parse from '../../utils/parser';
 import _ from 'lodash';
+
 
 let zIndex = 1;
 export const initialState = {
@@ -18,17 +20,19 @@ export const initialState = {
     "p": {
       id: "p",
       zIndex: 0,
-      type: SLIDE_TYPES.NORMAL,
+      slide_type: SLIDE_TYPES.NORMAL,
       styles: {},
       props: {}
     },
   },
   objects: {},
+  actionQueue: parse(require('json!../../../data/gehry.json')),
+  actionQueueIndex: 0
 };
 
 export function presentationReducer(state = initialState, {type, payload}) {
   switch (type) {
-    case RUN_COMMANDS:
+    case SET_QUEUE_INDEX:
 
       const clean = (items) => (
         _.chain(items)
@@ -38,15 +42,31 @@ export function presentationReducer(state = initialState, {type, payload}) {
         .value()
       )
 
-      const _state = {...state, 
-        slides: clean(state.slides), 
-        objects: clean(state.objects)
+      if(payload == 0) {
+        const _state = {...initialState, actionQueueIndex: 1};
+        return reduce(_state, state.actionQueue[payload].action);
+      } else if(payload >= state.actionQueueIndex) {
+        const actions = state.actionQueue.slice(state.actionQueueIndex, payload + 1);
+        const _state = {...state, 
+          slides: clean(state.slides), 
+          objects: clean(state.objects),
+          actionQueueIndex: payload + 1,
+        }
+        return _.reduce(_.map(actions, 'action'), reduce, _state);
       }
+      
+      const actions = state.actionQueue.slice(0, payload);
 
-      const _payload = Array.isArray(payload) ? payload : [payload]
-      // return _.reduce(_payload, reduce, _state);
+      let _state = _.reduce(_.map(actions, 'action'), reduce, initialState);
+      _state = {..._state,
+        slides: clean(_state.slides),
+        objects: clean(_state.objects),
+        actionQueueIndex: payload + 1
+      }
+      return reduce(_state, state.actionQueue[payload].action);
 
-      return reduce(_state, payload);
+      
+      
     default:
       return state;
   }
@@ -55,10 +75,10 @@ export function presentationReducer(state = initialState, {type, payload}) {
 function reduce(state, payload) {
   let obj, text, slide, slides, objs;
 
-  switch (payload.action) {
+  switch (payload.action_type) {
 
-    case ACTION_CONSTANTS.BATCH_COMMANDS:
-      return _.reduce(payload.commands, reduce, state);
+    case ACTION_CONSTANTS.BATCH_ACTION:
+      return _.reduce(payload.actions, reduce, state);
 
     case ACTION_CONSTANTS.DELETE_OBJECTS:
       objs = _.keyBy(_.map(payload.object_ids, object_id => (
@@ -73,7 +93,7 @@ function reduce(state, payload) {
       return {...state, objects: {
         ...state.objects,
         [payload.id]: {..._.omit(payload, 'action'),
-          styles: {...defaultObjectStyles(payload.type), ...payload.styles}, 
+          styles: {...defaultObjectStyles(payload.object_type), ...payload.styles}, 
           text: '', 
           textStyles: [], 
           zIndex: zIndex++,
@@ -108,7 +128,7 @@ function reduce(state, payload) {
 
     case ACTION_CONSTANTS.CREATE_SLIDE:
       slide = {..._.omit(payload, 'action'), styles: {}, zIndex: zIndex++, modified: true};
-      slides = _.sortBy([slide, ..._.filter(state.slides, s => s.type == payload.type)], 'zIndex');
+      slides = _.sortBy([slide, ..._.filter(state.slides, s => s.slide_type == payload.slide_type)], 'zIndex');
       slides = rearrangeSlides(slides, _.size(slides) - 1, payload.index);
 
       return {...state, slides: {...state.slides, ...slides}}
@@ -121,7 +141,7 @@ function reduce(state, payload) {
       }}
     
     case ACTION_CONSTANTS.REARRANGE_SLIDE:
-      slides = _.sortBy(_.filter(state.slides, s => s.type == SLIDE_TYPES.NORMAL), 'zIndex');
+      slides = _.sortBy(_.filter(state.slides, s => s.slide_type == SLIDE_TYPES.NORMAL), 'zIndex');
       slides = rearrangeSlides(slides, payload.start_index, payload.end_index);
 
       return {...state, slides: {...state.slides, ...slides}}
@@ -207,7 +227,7 @@ function reduce(state, payload) {
       return state;
       
     default:
-      console.log("Unknown Presentation Action: " + payload.action);
+      console.log("Unknown Presentation Action: " + payload.action_type);
       return state;
   }
 

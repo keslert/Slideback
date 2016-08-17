@@ -7,27 +7,32 @@ import css from '../containers/App.css';
 import { ACTION_CONSTANTS } from '../utils/parser';
 
 import * as SystemActions from '../core/system/actions';
+import { setQueueIndex } from '../core/presentation/actions';
+
 import Checkbox from './checkbox';
 
 @connect(
   state => ({
-    queue: state.system.commands,
-    index: state.system.index,
+    actionQueue: state.presentation.actionQueue,
+    actionQueueIndex: state.presentation.actionQueueIndex,
     play: state.system.play,
     speed: state.system.speed,
     collapse: state.system.collapse,
     realtime: state.system.realtime,
   }),
   dispatch => ({
-    ...bindActionCreators(SystemActions, dispatch)
+    ...bindActionCreators(SystemActions, dispatch),
+    setQueueIndex(index) {
+      dispatch(setQueueIndex(index))
+    }
   })
 )
 export default class ControlBar extends React.Component {
 
   static propTypes = {
-    queue: React.PropTypes.array.isRequired,
-    index: React.PropTypes.number.isRequired,
-    runCommands: React.PropTypes.func.isRequired,
+    actionQueue: React.PropTypes.array.isRequired,
+    actionQueueIndex: React.PropTypes.number.isRequired,
+    setQueueIndex: React.PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -40,9 +45,9 @@ export default class ControlBar extends React.Component {
     this.update(true);
   }
 
-  isTextAction(command) {
-    return command.action == ACTION_CONSTANTS.APPEND_TEXT ||
-           command.action == ACTION_CONSTANTS.DELETE_TEXT;
+  isTextAction(action) {
+    return action.action_type == ACTION_CONSTANTS.APPEND_TEXT ||
+           action.action_type == ACTION_CONSTANTS.DELETE_TEXT;
   }
 
 
@@ -50,40 +55,32 @@ export default class ControlBar extends React.Component {
 
 
   update(force) {
-    const { queue, index, play, realtime, collapse } = this.props;
-    const { runCommands, setIndex } = this.props;
+    const { actionQueue, actionQueueIndex, play, realtime, collapse } = this.props;
+    const { setQueueIndex } = this.props;
 
-    if((!play && !force) || index >= queue.length) {
+    if((!play && !force) || actionQueueIndex >= actionQueue.length) {
       return;
     }
 
-    let commands = queue[index].commands;
-    let nextIndex = index + 1;
-    if(collapse && this.isTextAction(commands)) {
-      commands = [commands];
-      while(this.isTextAction(queue[nextIndex].commands)) {
-        commands.push(queue[nextIndex].commands);
+    let action = actionQueue[actionQueueIndex].action;
+    let nextIndex = actionQueueIndex + 1;
+    if(collapse && this.isTextAction(action)) {
+      while(this.isTextAction(actionQueue[nextIndex].action)) {
         nextIndex++;
-      }
-      commands = {
-        action: ACTION_CONSTANTS.BATCH_COMMANDS,
-        type: 'Text Collapse',
-        commands
       }
     }
 
-    runCommands(commands);
-    setIndex(nextIndex);
+    setQueueIndex(nextIndex - 1);
 
-    if(nextIndex < queue.length) {
+    if(nextIndex < actionQueue.length) {
       let delay;
-      const nextCommands = queue[nextIndex].commands;
-      if(this.isTextAction(commands) && this.isTextAction(nextCommands)) {
+      const nextAction = actionQueue[nextIndex].action;
+      if(this.isTextAction(action) && this.isTextAction(nextAction)) {
         delay = 50;
       }
 
       if(realtime) {
-        delay = queue[nextIndex].timestamp - queue[nextIndex - 1].timestamp;
+        delay = actionQueue[nextIndex].timestamp - actionQueue[nextIndex - 1].timestamp;
       }
 
       this.delayedUpdate(delay);
@@ -108,9 +105,9 @@ export default class ControlBar extends React.Component {
     setRealtime(!realtime);
   }
 
-  toggleCollapseCommands() {
-    const { collapse, setCollapseCommands } = this.props;
-    setCollapseCommands(!collapse);
+  toggleCollapseActions() {
+    const { collapse, setCollapseActions } = this.props;
+    setCollapseActions(!collapse);
   }
 
   delayedUpdate(delay = 1000) {
@@ -120,7 +117,7 @@ export default class ControlBar extends React.Component {
 
   render() {
 
-    const { play, index, queue, speed, collapse, realtime } = this.props;
+    const { play, speed, collapse, realtime } = this.props;
 
     const menuItem = css['menu-item'];
     return (
@@ -143,10 +140,8 @@ export default class ControlBar extends React.Component {
         </div>
 
         <div className={menuItem}>
-          <Checkbox label={"Collapse Actions"} checked={collapse} onClick={() => this.toggleCollapseCommands()} />
-        </div>
-
-        <div className={menuItem}>Actions ({index}/{queue.length})</div> 
+          <Checkbox label={"Collapse Actions"} checked={collapse} onClick={() => this.toggleCollapseActions()} />
+        </div> 
       </div>
     );
   }

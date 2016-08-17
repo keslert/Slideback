@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { bindActionCreators } from 'redux';
-import { runCommands } from '../core/presentation/actions'
 import { connect } from 'react-redux';
 import Filmstrip from '../components/filmstrip';
 import Workspace from '../components/workspace';
@@ -15,21 +14,16 @@ import { SLIDE_TYPES, SLIDE_PROPERTIES, OBJECT_STYLES } from '../utils/parser';
     pageSize: state.presentation.pageSize,
     slides: state.presentation.slides,
     objects: state.presentation.objects,
-    commands: state.system.commands,
-    commandsIndex: state.system.index
   }),
   dispatch => ({
-    runCommands(commands) {
-      dispatch(runCommands(commands))
-    }
+    
   })
 )
 export default class App extends Component {
 
   render() {
 
-    const { slides, objects, pageSize, commands, commandsIndex } = this.props;
-    const { runCommands } = this.props;
+    const { slides, objects, pageSize } = this.props;
 
     let combined = _.map(slides, s => ({...s,
       objects: _.filter(objects, o => o.slide_id == s.id),
@@ -37,13 +31,13 @@ export default class App extends Component {
     }))
 
     combined = _.map(combined, s => ({...s,  
-      master: _.find(combined, s2 => s2.type == SLIDE_TYPES.MASTER)}
+      master: _.find(combined, s2 => s2.slide_type == SLIDE_TYPES.MASTER)}
     ))
 
     combined = _.map(combined, s => {
-      if(s.type == SLIDE_TYPES.NORMAL) {
+      if(s.slide_type == SLIDE_TYPES.NORMAL) {
         const template = _.find(combined, s2 => 
-          s2.type == SLIDE_TYPES.TEMPLATE && 
+          s2.slide_type == SLIDE_TYPES.TEMPLATE && 
           s2.props[SLIDE_PROPERTIES.LAYOUT] == s.props[SLIDE_PROPERTIES.LAYOUT]
         )
 
@@ -73,13 +67,12 @@ export default class App extends Component {
       return s;
     })
 
-
     return (
       <div className={style.app}>
-        <ControlBar runCommands={runCommands}   />
+        <ControlBar />
         <div className={style.viewer}>
           <Filmstrip slides={combined} />
-          <Workspace slides={combined} commands={commands} commandsIndex={commandsIndex} />
+          <Workspace slides={combined} />
         </div>
       </div>
     );

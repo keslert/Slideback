@@ -73,8 +73,8 @@ export default class TextLine extends React.Component {
     return _styles;
   }
 
-  mapStyles({type, value}) {
-    switch(type) {
+  mapStyles({style, value}) {
+    switch(style) {
       case TEXT_STYLES.BOLD:
         return { fontWeight: value ? 'bold' : 'normal' }
       case TEXT_STYLES.ITALICS:

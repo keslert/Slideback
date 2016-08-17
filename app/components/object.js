@@ -74,9 +74,9 @@ export default class SObject extends React.Component {
   }
 
   defaultStyles() {
-    const { type, styles, theme } = this.props;
+    const { object_type, styles, theme } = this.props;
 
-    switch(type) {
+    switch(object_type) {
       case OBJECT_TYPES.ROUND_SINGLE_CORNER_RECTANGLE:
         return { borderTopRightRadius: '10%' }
       case OBJECT_TYPES.RIGHT_TRIANGLE:
@@ -88,7 +88,6 @@ export default class SObject extends React.Component {
           styles[OBJECT_STYLES.FILL_OPACITY],
           theme
         );
-
 
         return {
           width: 0,
@@ -120,7 +119,7 @@ export default class SObject extends React.Component {
   customStyles(obj) {
     return extend(...map(obj.styles, (value, type) => {
 
-      if(this.props.type == OBJECT_TYPES.RIGHT_TRIANGLE) {
+      if(this.props.object_type == OBJECT_TYPES.RIGHT_TRIANGLE) {
         if(type == OBJECT_STYLES.LINE ||
            type == OBJECT_STYLES.LINE_COLOR ||
            type == OBJECT_STYLES.LINE_WIDTH) {

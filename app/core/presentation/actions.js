@@ -1,5 +1,5 @@
-import { RUN_COMMANDS } from './constants';
+import { SET_QUEUE_INDEX } from './constants';
 
-export function runCommands(commands) {
- return { type: RUN_COMMANDS, payload: commands };
+export function setQueueIndex(index) {
+ return { type: SET_QUEUE_INDEX, payload: index };
 }

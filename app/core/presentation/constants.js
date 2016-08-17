@@ -1,1 +1,1 @@
-export const RUN_COMMANDS = 'RUN_COMMANDS';
+export const SET_QUEUE_INDEX = 'SET_QUEUE_INDEX';

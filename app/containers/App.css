@@ -116,6 +116,7 @@ button.primary:hover {
   border: 1px solid transparent;
   border-top-color: #333;
   box-sizing: border-box;
+  pointer-events: none;
 }
 
 /*.checkbox input[type="checkbox"] {

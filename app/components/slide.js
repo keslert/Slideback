@@ -15,7 +15,12 @@ export default class Slide extends React.Component {
   };
 
   shouldComponentUpdate(nextProps) {
-    return !!(nextProps.modified || this.props.modified || _.some(this.props.objects, o => o.modified))
+    return !!(
+      nextProps.modified || 
+      this.props.modified || 
+      _.some(this.props.objects, o => o.modified) ||
+      nextProps.maxWidth != this.props.maxWidth
+    )
   }
 
   render() {

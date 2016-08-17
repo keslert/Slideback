@@ -1,18 +1,21 @@
 import React from 'react';
 import css from '../containers/App.css';
-import { ACTION_CONSTANTS } from'../utils/parser'; 
 
 export default class Timeline extends React.Component {
 
   static propTypes = {
-    commands: React.PropTypes.array.isRequired,
     width: React.PropTypes.number,
-    scale: React.PropTypes.number
+    scale: React.PropTypes.number,
+    spacing: React.PropTypes.number,
+    events: React.PropTypes.array.isRequired,
+    markerIndex: React.PropTypes.number,
+    onClick: React.PropTypes.func,
   }
 
   static defaultProps = {
     width: 500,
-    scale: 8
+    scale: 10,
+    spacing: 1,
   }
   
   componentDidMount() {
@@ -24,72 +27,69 @@ export default class Timeline extends React.Component {
   }
 
   updateCanvas() {
-    const { commands, scale } = this.props;
-    const { width, height } = this.getCanvasSize();
+    const { events, scale, spacing } = this.props;
+    const { width, height, columns } = this.getCanvasSize();
 
     const ctx = this.refs.canvas.getContext('2d');
     ctx.fillStyle = 'transparent';
     ctx.fillRect(0, 0, width, height)
 
-    const columns = width / scale;
-    commands.forEach((command, i) => {
+    events.forEach((event, i) => {
       const x = i % columns;
-      const y = Math.floor(i / columns) * 2 + 1;
+      const y = Math.floor(i / columns) * spacing + 1;
 
-      ctx.fillStyle = colorMap[command.commands.action] || '#fff';
-      ctx.fillRect(x * scale, y * scale, scale, scale);
+      ctx.fillStyle = event || '#fff';
+      ctx.fillRect(x * scale, y * scale, scale, scale / 2);
     })
   }
-  
-  render() {
-    const { commands, index, scale } = this.props;
-    const { width, height } = this.getCanvasSize();
 
-    const columns = width / scale;
-    const x = (index - 1) % columns;
-    const y = Math.floor((index - 1) / columns) * 2;
+  renderMarker() {
+    const { markerIndex, scale, spacing } = this.props;
+    const { columns } = this.getCanvasSize();
+
+    const x = markerIndex % columns;
+    const y = Math.floor(markerIndex / columns) * spacing;
     const marker = {
-      top: y * scale + scale / 2 - 1,
+      top: y * scale + (scale / 2),
       left: x * scale,
       borderWidth: scale / 2,
     }
 
+    return <div className={css.marker} style={marker}></div>
+  }
+  
+  render() {
+    const { width, height, columns } = this.getCanvasSize();
+
     return (
       <div className={css.timeline}>
-        <div className={css.marker} style={marker}></div>
-        <canvas ref="canvas" width={width} height={height}/>
+        {this.renderMarker()}
+        <canvas ref="canvas" width={width} height={height} onClick={(e) => this.onClick(e)} />
       </div>
     );
   }
+  
+  onClick(e) {
+    const { scale, spacing, onClick } = this.props;
+    const { columns } = this.getCanvasSize();
+
+    const bb = e.target.getBoundingClientRect();
+    const x = e.clientX - bb.left;
+    const y = e.clientY - bb.top;
+
+    const column = Math.floor(x / scale);
+    const row = Math.floor((y - scale) / (scale * spacing));
+
+    const i = row * columns + column;
+    
+    onClick && onClick(i);
+  }
 
   getCanvasSize() {
-    const { width, scale, commands } = this.props;
+    const { width, scale, events, spacing } = this.props;
     const _width = Math.floor(width / scale);
-    const height = Math.ceil(commands.length / _width) * 2;
+    const height = Math.ceil(events.length / _width) * spacing + 1;
 
-    return { width: _width * scale, height: height * scale }
+    return { width: _width * scale, height: height * scale, columns: _width }
   }
-}
-
-const colorMap = {
-  [ACTION_CONSTANTS.NO_OP]: '#000',
-  [ACTION_CONSTANTS.BATCH_COMMANDS]: '#F8B5D2',
-  [ACTION_CONSTANTS.DELETE_OBJECTS]: '#E574C3',
-  [ACTION_CONSTANTS.CREATE_GROUP]: '#BCBF00',
-  [ACTION_CONSTANTS.DELETE_GROUP]: '#BCBF00',
-  [ACTION_CONSTANTS.RESIZE_PAGE]: '#C7C7C7',
-  [ACTION_CONSTANTS.CREATE_OBJECT]: '#C59C93',
-  [ACTION_CONSTANTS.STYLE_OBJECTS]: '#8D5649',
-  [ACTION_CONSTANTS.ORDER_OBJECTS]: '#C5AFD6',
-  [ACTION_CONSTANTS.TRANSFORM_OBJECT]: '#9564BF',
-  [ACTION_CONSTANTS.SLIDE_STYLE]: '#1776B6',
-  [ACTION_CONSTANTS.CREATE_SLIDE]: '#ADC6E9',
-  [ACTION_CONSTANTS.DELETE_SLIDE]: '#FF7F00',
-  [ACTION_CONSTANTS.REARRANGE_SLIDE]: '#FFBC72',
-  [ACTION_CONSTANTS.APPEND_TEXT]: '#96E086',
-  [ACTION_CONSTANTS.DELETE_TEXT]: '#D8241F',
-  [ACTION_CONSTANTS.STYLE_TEXT]: '#FF9794',
-  [ACTION_CONSTANTS.CREATE_LIST_ENTITY]: '#9CDAE6',
-  [ACTION_CONSTANTS.STYLE_LIST_ENTITY]: '#9CDAE6',
-  [ACTION_CONSTANTS.CHANGE_SLIDE_PROPERTIES]: '#7F7F7F',
 }

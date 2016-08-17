@@ -1,6 +1,6 @@
 export const ACTION_CONSTANTS = {
   NO_OP: 'NO_OP',
-  BATCH_COMMANDS: 'BATCH_COMMANDS',
+  BATCH_ACTION: 'BATCH_ACTION',
   DELETE_OBJECTS: 'DELETE_OBJECTS',
   CREATE_GROUP: 'CREATE_GROUP',
   DELETE_GROUP: 'DELETE_GROUP',
@@ -23,9 +23,10 @@ export const ACTION_CONSTANTS = {
 const C = ACTION_CONSTANTS;
 
 export default function(raw) {
-  const actions = _.map(raw.changelog, json => ({
-    commands: parse(json[0]),
+  const actions = _.map(raw.changelog, (json, i) => ({
+    action: parse(json[0]),
     timestamp: json[1],
+    index: i
   }));
 
   return actions;
@@ -43,7 +44,7 @@ function parse(json) {
     case 3:
       return createObject(json);
     case 4:
-      return batchCommands(json);
+      return batchActions(json);
     case 5:
       return styleObject(json);
     case 6:
@@ -75,12 +76,12 @@ function parse(json) {
     case 42:
       return styleListEntity(json);
     case 44:
-      return { action: C.NO_OP, type: 'Object description' };
+      return { action_type: C.NO_OP, details: 'Object description' };
     case 45:
-      return { action: C.NO_OP, type: 'Set Language' };
+      return { action_type: C.NO_OP, details: 'Set Language' };
     default:
       console.log(`Unrecognized action ${json[0]}`);
-      return { action: C.NO_OP, type: json[0]};
+      return { action_type: C.NO_OP, details: json[0]};
   }
 }
 
@@ -96,7 +97,7 @@ function parse(json) {
 */
 function deleteObject(json) {
   return {
-    action: C.DELETE_OBJECTS,
+    action_type: C.DELETE_OBJECTS,
     object_ids: json[1]
   }
 }
@@ -113,7 +114,7 @@ function deleteObject(json) {
 */
 function resizePage(json) {
   return {
-    action: C.RESIZE_PAGE,
+    action_type: C.RESIZE_PAGE,
     width: json[1][0],
     height: json[1][1]
   }
@@ -133,7 +134,7 @@ function resizePage(json) {
 */
 function createGroup(json) {
   return {
-    action: C.CREATE_GROUP,
+    action_type: C.CREATE_GROUP,
     group_id: json[1],
     object_ids: json[2],
     bb: json[3],
@@ -158,9 +159,9 @@ function createGroup(json) {
 */
 function createObject(json) {
   return {
-    action: C.CREATE_OBJECT,
+    action_type: C.CREATE_OBJECT,
     id: json[1],
-    type: _rawToObjectType[json[2]],
+    object_type: _rawToObjectType[json[2]],
     bb: json[3],
     styles: _parseStyles(json[4]),
     slide_id: json[5]
@@ -195,7 +196,7 @@ const _rawToObjectType = {
 }
 
 /*****************************************************************************
-*  4 | Batch Commands
+*  4 | Batch Actions
 ******************************************************************************
 [
   4,
@@ -205,17 +206,17 @@ const _rawToObjectType = {
   ]
 ]
 */
-function batchCommands(json) {
-  const commands = json[1].map(parse);
+function batchActions(json) {
+  const actions = json[1].map(parse);
 
   return {
-    action: C.BATCH_COMMANDS,
-    type: determineBatchType(commands),
-    commands
+    action_type: C.BATCH_ACTION,
+    details: determineBatchType(actions),
+    actions
   }
 }
 
-function determineBatchType(commands) {
+function determineBatchType(actions) {
   return null;
 }
 
@@ -249,7 +250,7 @@ function determineBatchType(commands) {
 function styleObject(json) {
 
   return {
-    action: C.STYLE_OBJECTS,
+    action_type: C.STYLE_OBJECTS,
     object_ids: json[1],
     styles: _parseStyles(json[3]),
   }
@@ -342,7 +343,7 @@ const _rawToObjectStyles = {
 */
 function transformObject(json) {
   return {
-    action: C.TRANSFORM_OBJECT,
+    action_type: C.TRANSFORM_OBJECT,
     object_id: json[1],
     bb: json[2]
   }
@@ -358,7 +359,7 @@ function transformObject(json) {
 */
 function deleteGroup(json) {
   return {
-    action: C.DELETE_GROUP,
+    action_type: C.DELETE_GROUP,
     group_id: json[1]
   }
 }
@@ -381,7 +382,7 @@ function deleteGroup(json) {
 
 function orderObjects(json) {
   return {
-    action: C.ORDER_OBJECTS,
+    action_type: C.ORDER_OBJECTS,
     object_ids: json[1],
     direction: _directions[json[2]],
     slide_id: json[3]
@@ -409,7 +410,7 @@ const _directions = {
 
 function backgroundStyle(json) {
   return {
-    action: C.SLIDE_STYLE,
+    action_type: C.SLIDE_STYLE,
     styles: _parseStyles(json[2]),
     slide_id: json[3]
   }
@@ -460,10 +461,10 @@ function backgroundStyle(json) {
 */
 function createSlide(json) {
   return {
-    action: C.CREATE_SLIDE,
+    action_type: C.CREATE_SLIDE,
     id: json[1],
     index: json[2],
-    type: _rawToSlideType[json[3]],
+    slide_type: _rawToSlideType[json[3]],
     props: _slideProperties(json[4]),
   }
 }
@@ -493,7 +494,7 @@ const _rawToSlideType = {
 */
 function deleteSlide(json) {
   return {
-    action: C.DELETE_SLIDE,
+    action_type: C.DELETE_SLIDE,
     index: json[1],
     slide_id: json[4]
   }
@@ -512,7 +513,7 @@ function deleteSlide(json) {
 */
 function rearrangeSlide(json) {
   return {
-    action: C.REARRANGE_SLIDE,
+    action_type: C.REARRANGE_SLIDE,
     start_index: json[1],
     end_index: json[2]
   }
@@ -532,7 +533,7 @@ function rearrangeSlide(json) {
 */
 function appendText(json) {
   return {
-    action: C.APPEND_TEXT,
+    action_type: C.APPEND_TEXT,
     object_id: json[1],
     index: json[3],
     text: json[4]
@@ -552,7 +553,7 @@ function appendText(json) {
 */
 function deleteText(json) {
   return {
-    action: C.DELETE_TEXT,
+    action_type: C.DELETE_TEXT,
     object_id: json[1],
     start_index: json[3],
     end_index: json[4]
@@ -577,7 +578,7 @@ function deleteText(json) {
 */
 function styleText(json) {
   return {
-    action: C.STYLE_TEXT,
+    action_type: C.STYLE_TEXT,
     object_id: json[1],
     start_index: json[3],
     end_index: json[4],
@@ -589,7 +590,7 @@ function _parseTextStyles(json) {
   let styles = [];
   for(let i = 0; i < json.length; i += 2) {
     styles.push({
-      type: _rawToTextStyles[json[i]],
+      style: _rawToTextStyles[json[i]],
       value: json[i + 1]
     })
   }
@@ -639,7 +640,7 @@ const _rawToTextStyles = {
 */
 function changeSlideProperties(json) {
   return {
-    action: C.CHANGE_SLIDE_PROPERTIES,
+    action_type: C.CHANGE_SLIDE_PROPERTIES,
     slide_ids: json[1],
     props: _slideProperties(json[3])
   }
@@ -682,7 +683,7 @@ const _rawToSlideProperties = {
 */
 function createListEntity(json) {
   return {
-    action: C.CREATE_LIST_ENTITY,
+    action_type: C.CREATE_LIST_ENTITY,
     object_id: json[1],
     id: json[3]
   }
@@ -723,7 +724,7 @@ function createListEntity(json) {
 */
 function styleListEntity(json) {
   return {
-    action: C.STYLE_LIST_ENTITY,
+    action_type: C.STYLE_LIST_ENTITY,
     object_id: json[1],
     list_entity_id: json[3],
     inset_index: json[4],
