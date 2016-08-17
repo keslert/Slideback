@@ -6,6 +6,7 @@ import {
   SET_SPEED, 
   SET_COLLAPSE_ACTIONS,
   SET_REALTIME,
+  SET_ACTIVE_SLIDE,
 } from './constants';
 import parse from '../../utils/parser';
 
@@ -14,6 +15,7 @@ export const initialState = {
   play: false,
   realtime: false,
   collapse: true,
+  activeSlide: null,
 };
 
 export function systemReducer(state = initialState, {type, payload}) {
@@ -32,6 +34,8 @@ export function systemReducer(state = initialState, {type, payload}) {
       return {...state, realtime: payload }
     case SET_COLLAPSE_ACTIONS:
       return {...state, collapse: payload } 
+    case SET_ACTIVE_SLIDE:
+      return {...state, activeSlide: payload }
 
     default:
       return state;

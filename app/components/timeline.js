@@ -30,7 +30,8 @@ export default class Timeline extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(prevProps.events.length != this.props.events.length) {
+    if(prevProps.events.length != this.props.events.length || 
+       prevProps.width != this.props.width) {
       this.updateCanvas();
     }
   }
@@ -79,7 +80,7 @@ export default class Timeline extends React.Component {
         top: y * scale + (scale / 2),
         left: x * scale,
         borderWidth: scale / 2,
-        borderTopColor: 'red',
+        borderTopColor: '#ec634d',
       }
 
       return <div className={css.marker} style={style}></div>

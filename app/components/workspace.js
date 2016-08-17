@@ -13,6 +13,7 @@ import { SLIDE_TYPES, ACTION_CONSTANTS } from '../utils/parser';
   state => ({
     actionQueue: state.presentation.actionQueue,
     actionQueueIndex: state.presentation.actionQueueIndex,
+    activeSlide: state.system.activeSlide,
   }),
   dispatch => ({
     setQueueIndex(index) {
@@ -43,14 +44,16 @@ export default class Workspace extends React.Component {
 
   render() {
 
-    const { slides, actionQueue, actionQueueIndex } = this.props;
+    const { slides, actionQueue, actionQueueIndex, activeSlide } = this.props;
     const { maxWidth } = this.state;
 
     const filtered = sortBy(filter(slides, s => s.slide_type == SLIDE_TYPES.NORMAL), 'zIndex');
 
-    const slide = find(filtered, s => 
-      s.modified || some(s.objects, 'modified')
-    ) || filtered[0]
+
+    const slide = find(filtered, s => s.id == activeSlide) ||
+                find(filtered, s =>  s.modified || some(s.objects, 'modified')) ||
+                filtered[0]
+    console.log(slide);
 
     const lastAction = actionQueue[actionQueueIndex - 1] ? actionQueue[actionQueueIndex - 1].action.action_type : '';
 
@@ -64,7 +67,7 @@ export default class Workspace extends React.Component {
           onClick={(index) => this.onTimelineClick(index)}
         />
         <div style={{flex: 1}}>
-          <Slide {...slide} maxWidth={maxWidth} />
+          <Slide {...slide} maxWidth={maxWidth} key={slide.id} />
         </div>
       </div>
     );

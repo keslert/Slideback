@@ -5,6 +5,7 @@ import {
   SET_SPEED, 
   SET_COLLAPSE_ACTIONS,
   SET_REALTIME,
+  SET_ACTIVE_SLIDE,
 } from './constants';
 
 export function addCommands(commands) {
@@ -46,5 +47,12 @@ export function setRealtime(bool) {
   return {
     type: SET_REALTIME,
     payload: bool
+  }
+}
+
+export function setActiveSlide(id) {
+  return {
+    type: SET_ACTIVE_SLIDE,
+    payload: id
   }
 }

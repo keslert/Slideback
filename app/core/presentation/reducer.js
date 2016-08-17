@@ -84,7 +84,7 @@ function reduce(state, payload) {
 
       return {...state, objects: {
         ...state.objects,
-        [payload.id]: {..._.omit(payload, 'action'),
+        [payload.id]: {..._.omit(payload, 'action_type'),
           styles: {...defaultObjectStyles(payload.object_type), ...payload.styles}, 
           text: '', 
           textStyles: [], 
@@ -119,7 +119,7 @@ function reduce(state, payload) {
       }}
 
     case ACTION_CONSTANTS.CREATE_SLIDE:
-      slide = {..._.omit(payload, 'action'), styles: {}, zIndex: zIndex++, modified: true};
+      slide = {..._.omit(payload, 'action_type'), styles: {}, zIndex: zIndex++, modified: true};
       slides = _.sortBy([slide, ..._.filter(state.slides, s => s.slide_type == payload.slide_type)], 'zIndex');
       slides = rearrangeSlides(slides, _.size(slides) - 1, payload.index);
 
@@ -199,7 +199,7 @@ function reduce(state, payload) {
       obj = state.objects[payload.object_id];
       return {...state, objects: {...state.objects,
         [payload.object_id]: {...obj, modified: true,
-          textStyles: [...obj.textStyles, _.omit(payload, 'action')]
+          textStyles: [...obj.textStyles, _.omit(payload, 'action_type')]
         }
       }}
 
