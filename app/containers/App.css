@@ -118,6 +118,11 @@ button.primary:hover {
   box-sizing: border-box;
   pointer-events: none;
 }
+.timeline .hover {
+  position: absolute;
+  pointer: cursor;
+  background: rgba(0,0,0,.2);
+}
 
 /*.checkbox input[type="checkbox"] {
   display:none;

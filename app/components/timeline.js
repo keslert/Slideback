@@ -17,13 +17,22 @@ export default class Timeline extends React.Component {
     scale: 10,
     spacing: 1,
   }
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      hover: null
+    }
+  }
   
   componentDidMount() {
     this.updateCanvas();
   }
 
-  componentDidUpdate() {
-    this.updateCanvas();
+  componentDidUpdate(prevProps) {
+    if(prevProps.events.length != this.props.events.length) {
+      this.updateCanvas();
+    }
   }
 
   updateCanvas() {
@@ -57,6 +66,26 @@ export default class Timeline extends React.Component {
 
     return <div className={css.marker} style={marker}></div>
   }
+
+  renderHover() {
+    const { hover } = this.state;
+    if(hover != null) {
+      const { scale, spacing } = this.props;
+      const { columns } = this.getCanvasSize();
+
+      const x = hover % columns;
+      const y = Math.floor(hover / columns) * spacing;
+      const style = {
+        top: y * scale + (scale / 2),
+        left: x * scale,
+        borderWidth: scale / 2,
+        borderTopColor: 'red',
+      }
+
+      return <div className={css.marker} style={style}></div>
+
+    }
+  }
   
   render() {
     const { width, height, columns } = this.getCanvasSize();
@@ -64,25 +93,54 @@ export default class Timeline extends React.Component {
     return (
       <div className={css.timeline}>
         {this.renderMarker()}
-        <canvas ref="canvas" width={width} height={height} onClick={(e) => this.onClick(e)} />
+        <canvas 
+          ref="canvas" 
+          width={width} 
+          height={height} 
+          onClick={(e) => this.onClick(e)}
+          onMouseLeave={() => this.setState({hover: null})}
+          onMouseMove={(e) => this.onHover(e)} 
+        />
+        {this.renderHover()}
       </div>
     );
   }
+
+  onHover(e) {
+    const { events } = this.props;
+    const bb = e.target.getBoundingClientRect();
+    const x = e.clientX - bb.left;
+    const y = e.clientY - bb.top;
+
+    const i = this.calculateIndexFromPosition(x, y);
+    if(i >= 0 && i < events.length) {
+      this.setState({hover: i});
+    } else {
+      this.setState({hover: null});
+    }
+  }
   
   onClick(e) {
-    const { scale, spacing, onClick } = this.props;
-    const { columns } = this.getCanvasSize();
+    const { onClick, events } = this.props;
 
     const bb = e.target.getBoundingClientRect();
     const x = e.clientX - bb.left;
     const y = e.clientY - bb.top;
 
+    const i = this.calculateIndexFromPosition(x, y);
+    
+    if(onClick && i >= 0 && i < events.length) {
+      onClick(i);
+    }
+  }
+
+  calculateIndexFromPosition(x, y) {
+    const { scale, spacing } = this.props;
+    const { width, height, columns } = this.getCanvasSize();
+
     const column = Math.floor(x / scale);
     const row = Math.floor((y - scale) / (scale * spacing));
-
-    const i = row * columns + column;
-    
-    onClick && onClick(i);
+    return row * columns + column;
   }
 
   getCanvasSize() {
