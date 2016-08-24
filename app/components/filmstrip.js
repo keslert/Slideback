@@ -42,7 +42,6 @@ export default class Filmstrip extends React.Component {
   }
 
   setActiveSlide(id) {
-    console.log(id);
     const { activeSlide, setActiveSlide } = this.props;
     setActiveSlide(id == activeSlide ? null : id);
   }

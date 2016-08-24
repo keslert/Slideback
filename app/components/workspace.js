@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Slide from './slide';
 import Timeline from './timeline';
+import Stats from './stats';
 import css from '../containers/App.css';
 import { setQueueIndex } from '../core/presentation/actions';
-import { setIndex } from '../core/system/actions';
 import { filter, sortBy, find, some } from 'lodash';
 import { SLIDE_TYPES, ACTION_CONSTANTS } from '../utils/parser';
 
@@ -53,16 +53,22 @@ export default class Workspace extends React.Component {
     const slide = find(filtered, s => s.id == activeSlide) ||
                 find(filtered, s =>  s.modified || some(s.objects, 'modified')) ||
                 filtered[0]
-    console.log(slide);
+
+    const events = actionQueue.map(item => ({
+      color: colorMap[item.action.action_type],
+      highlight: item.action.slide_id == slide.id || 
+                 slide.objects[item.object_id]
+    }))
 
     const lastAction = actionQueue[actionQueueIndex - 1] ? actionQueue[actionQueueIndex - 1].action.action_type : '';
 
     return (
       <div className={css.workspace}>
         <div>{lastAction}</div>
+        <Stats slides={slides} width={maxWidth} />
         <Timeline 
           width={maxWidth}
-          events={actionQueue.map(item => colorMap[item.action.action_type])} 
+          events={events} 
           markerIndex={actionQueueIndex - 1}
           onClick={(index) => this.onTimelineClick(index)}
         />

@@ -70,6 +70,9 @@ function reduce(state, payload) {
   switch (payload.action_type) {
 
     case ACTION_CONSTANTS.BATCH_ACTION:
+      if(!payload.details) {
+        // debugger;
+      }
       return _.reduce(payload.actions, reduce, state);
 
     case ACTION_CONSTANTS.DELETE_OBJECTS:
@@ -127,6 +130,9 @@ function reduce(state, payload) {
 
     case ACTION_CONSTANTS.DELETE_SLIDE:
       slide = state.slides[payload.slide_id];
+      if(!slide) {
+        return state;
+      } 
 
       return {...state, slides: {...state.slides,
         [payload.slide_id]: {...slide, modified: true, deleted: true}

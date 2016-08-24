@@ -19,6 +19,11 @@ export const ACTION_CONSTANTS = {
   CREATE_LIST_ENTITY: 'CREATE_LIST_ENTITY',
   STYLE_LIST_ENTITY: 'STYLE_LIST_ENTITY',
   CHANGE_SLIDE_PROPERTIES: 'CHANGE_SLIDE_PROPERTIES',
+  B_NEW_THEME: 'B_NEW_THEME',
+  B_COPY_PASTE_SLIDE: 'B_COPY_PASTE_SLIDE',
+  B_INSERT_SLIDE: 'B_INSERT_SLIDE',
+  B_CHANGE_SLIDE_TEMPLATE: 'B_CHANGE_SLIDE_TEMPLATE',
+  B_INSERT_IMAGE: 'B_INSERT_IMAGE',
 }
 const C = ACTION_CONSTANTS;
 
@@ -208,6 +213,10 @@ const _rawToObjectType = {
 */
 function batchActions(json) {
   const actions = json[1].map(parse);
+  
+  if(actions.length == 1) {
+    return actions[0]
+  }
 
   return {
     action_type: C.BATCH_ACTION,
@@ -217,7 +226,50 @@ function batchActions(json) {
 }
 
 function determineBatchType(actions) {
-  return null;
+  return _isThemeChange(actions) ||
+         _isCopyPasteSlide(actions) ||
+         _isInsertSlide(actions) ||
+         _isSlideTemplateChange(actions) ||
+         _isInsertImage(actions) 
+}
+
+function _isInsertImage(actions) {
+  return (
+    actions[0].action_type == C.CREATE_OBJECT &&
+    actions[0].object_type == OBJECT_TYPES.IMAGE
+  ) && C.B_INSERT_IMAGE
+}
+
+function _isCopyPasteSlide(actions) {
+  const types = _.keyBy(actions, 'action_type');
+  return (
+    types[C.CREATE_SLIDE] &&
+    types[C.CREATE_OBJECT] &&
+    types[C.STYLE_TEXT]
+  ) && C.B_COPY_PASTE_SLIDE
+}
+
+function _isInsertSlide(actions) {
+  const types = _.keyBy(actions, 'action_type');
+  return (
+    types[C.CREATE_SLIDE] &&
+    types[C.CREATE_OBJECT]
+  ) && C.B_INSERT_SLIDE
+}
+
+function _isThemeChange(actions) {
+  return _.find(actions, action => 
+    action.action_type == C.CREATE_SLIDE && 
+    action.props[SLIDE_PROPERTIES.CREATE_THEME]
+  ) && C.B_NEW_THEME
+}
+
+function _isSlideTemplateChange(actions) {
+  const types = _.keyBy(actions, 'action_type');
+  return (
+    actions[0].action_type == C.CHANGE_SLIDE_PROPERTIES &&
+    actions[0].props[SLIDE_PROPERTIES.LAYOUT]
+  ) && C.B_CHANGE_SLIDE_TEMPLATE;
 }
 
 
@@ -284,6 +336,7 @@ export const OBJECT_STYLES = {
   VERTICAL_ALIGNMENT: 'VERTICAL_ALIGNMENT',
   DESCRIPTION: 'DESCRIPTION',
   PLACEHOLDER_TYPE: 'PLACEHOLDER_TYPE',
+  PLACEHOLDER_ID: 'PLACEHOLDER_ID',
   VISIBLE: 'VISIBLE',
   LINK: 'LINK',
   LINE_TYPE: 'LINE_TYPE',

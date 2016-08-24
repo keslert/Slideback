@@ -15,7 +15,7 @@ export default class Timeline extends React.Component {
   static defaultProps = {
     width: 500,
     scale: 10,
-    spacing: 1,
+    spacing: 1.5,
   }
 
   constructor(props) {
@@ -30,7 +30,7 @@ export default class Timeline extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(prevProps.events.length != this.props.events.length || 
+    if(true || prevProps.events.length != this.props.events.length || 
        prevProps.width != this.props.width) {
       this.updateCanvas();
     }
@@ -47,9 +47,10 @@ export default class Timeline extends React.Component {
     events.forEach((event, i) => {
       const x = i % columns;
       const y = Math.floor(i / columns) * spacing + 1;
+      const height = scale / (event.highlight ? 1 : 2);
 
-      ctx.fillStyle = event || '#fff';
-      ctx.fillRect(x * scale, y * scale, scale, scale / 2);
+      ctx.fillStyle = event.color || '#fff';
+      ctx.fillRect(x * scale, y * scale, scale, height);
     })
   }
 

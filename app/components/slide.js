@@ -67,6 +67,11 @@ export default class Slide extends React.Component {
   customStyles(styles = []) {
     return extend(...map(styles, (value, type) => {
       switch(type) {
+        case OBJECT_STYLES.IMAGE_URL:
+          return {
+            background: `url(${value})`,
+            backgroundSize: '100%',
+          }
         case OBJECT_STYLES.FILL:
 
           const color = getColor(
@@ -76,7 +81,7 @@ export default class Slide extends React.Component {
             this.props.master.props["CREATE_THEME"][1]
           );
 
-          return { 'backgroundColor': color }
+          return { 'background': color }
         default:
           return {};
       }

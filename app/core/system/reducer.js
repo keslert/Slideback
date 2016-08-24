@@ -8,7 +8,6 @@ import {
   SET_REALTIME,
   SET_ACTIVE_SLIDE,
 } from './constants';
-import parse from '../../utils/parser';
 
 export const initialState = {
   speed: 2,
