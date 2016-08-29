@@ -55,60 +55,90 @@ export default class Workspace extends React.Component {
                 filtered[0]
 
     const events = actionQueue.map(item => ({
-      color: colorMap[item.action.action_type],
+      color: this.getColor(item.action),
       highlight: item.action.slide_id == slide.id || 
                  slide.objects[item.object_id]
     }))
 
-    const lastAction = actionQueue[actionQueueIndex - 1] ? actionQueue[actionQueueIndex - 1].action.action_type : '';
+    const lastAction = actionQueue[actionQueueIndex - 1] || {action: {}};
+    const lastActionText = lastAction.action.details || lastAction.action.action_type;
+    console.log(lastAction);
+
+    const stats = false;
 
     return (
       <div className={css.workspace}>
-        <div>{lastAction}</div>
-        <Stats slides={slides} width={maxWidth} />
-        <Timeline 
-          width={maxWidth}
-          events={events} 
-          markerIndex={actionQueueIndex - 1}
-          onClick={(index) => this.onTimelineClick(index)}
-        />
-        <div style={{flex: 1}}>
-          <Slide {...slide} maxWidth={maxWidth} key={slide.id} />
-        </div>
+        <div>{lastActionText}</div>
+        {stats
+          ?
+          <Stats slides={slides} width={maxWidth} />
+          :
+          <div>
+            <Timeline 
+              width={maxWidth}
+              events={events} 
+              markerIndex={actionQueueIndex - 1}
+              onClick={(index) => this.onTimelineClick(index)}
+            />
+            <div style={{flex: 1}}>
+              <Slide {...slide} maxWidth={maxWidth} key={slide.id} />
+            </div>
+          </div>
+        }
       </div>
     );
   }
 
   onTimelineClick(index) {
-    const { actionQueueIndex, setQueueIndex } = this.props;
+    const { actionQueue, actionQueueIndex, setQueueIndex } = this.props;
+
+    if(index == actionQueueIndex) {
+      console.log(actionQueue[index]);
+    }
+
     setQueueIndex(index);
   }
 
   getMaxWidth() {
     return Math.min(960, window.innerWidth - 300);
   }
-}
 
+  getColor(action) {
+    const A = ACTION_CONSTANTS;
 
-const colorMap = {
-  [ACTION_CONSTANTS.NO_OP]: '#000',
-  [ACTION_CONSTANTS.BATCH_ACTION]: '#F8B5D2',
-  [ACTION_CONSTANTS.DELETE_OBJECTS]: '#E574C3',
-  [ACTION_CONSTANTS.CREATE_GROUP]: '#BCBF00',
-  [ACTION_CONSTANTS.DELETE_GROUP]: '#BCBF00',
-  [ACTION_CONSTANTS.RESIZE_PAGE]: '#C7C7C7',
-  [ACTION_CONSTANTS.CREATE_OBJECT]: '#C59C93',
-  [ACTION_CONSTANTS.STYLE_OBJECTS]: '#8D5649',
-  [ACTION_CONSTANTS.ORDER_OBJECTS]: '#C5AFD6',
-  [ACTION_CONSTANTS.TRANSFORM_OBJECT]: '#9564BF',
-  [ACTION_CONSTANTS.SLIDE_STYLE]: '#1776B6',
-  [ACTION_CONSTANTS.CREATE_SLIDE]: '#ADC6E9',
-  [ACTION_CONSTANTS.DELETE_SLIDE]: '#FF7F00',
-  [ACTION_CONSTANTS.REARRANGE_SLIDE]: '#FFBC72',
-  [ACTION_CONSTANTS.APPEND_TEXT]: '#96E086',
-  [ACTION_CONSTANTS.DELETE_TEXT]: '#D8241F',
-  [ACTION_CONSTANTS.STYLE_TEXT]: '#FF9794',
-  [ACTION_CONSTANTS.CREATE_LIST_ENTITY]: '#9CDAE6',
-  [ACTION_CONSTANTS.STYLE_LIST_ENTITY]: '#9CDAE6',
-  [ACTION_CONSTANTS.CHANGE_SLIDE_PROPERTIES]: '#7F7F7F',
+    const colorMap = {
+      [A.NO_OP]: '#fff',
+      [A.BATCH_ACTION]: '#333',
+      [A.B_NEW_THEME]: '#215AB7',
+
+      [A.CREATE_SLIDE]: '#1B969A',
+      [A.B_COPY_PASTE_SLIDE]: '#1B969A',
+      [A.CREATE_GROUP]: '#38D4D8',
+      [A.CREATE_OBJECT]: '#38D4D8',
+      [A.B_INSERT_IMAGE]: '#37D5A9',
+      [A.APPEND_TEXT]: '#99D792',
+
+      [A.B_DELETE_APPEND_TEXT]: '#FF9F3F',
+
+	    [A.DELETE_SLIDE]: '#A72B13',
+      [A.DELETE_GROUP]: '#ED2E19',
+      [A.DELETE_OBJECTS]: '#ED2E19',
+      [A.DELETE_TEXT]: '#E56F6F',
+
+      [A.RESIZE_PAGE]: '#F4A9D5',
+      [A.CHANGE_SLIDE_PROPERTIES]: '#F4A9D5',
+      [A.B_CHANGE_SLIDE_TEMPLATE]: '#F5CDE4',
+      [A.SLIDE_STYLE]: '#E23B9F',
+
+      [A.STYLE_OBJECTS]: '#9241CF',
+      [A.TRANSFORM_OBJECT]: '#9241CF',
+
+      [A.STYLE_TEXT]: '#AE89CB',
+
+      [A.ORDER_OBJECTS]: '#A9786D',
+      [A.REARRANGE_SLIDE]: '#E1AA9C',
+    }
+
+    return colorMap[action.details] || colorMap[action.action_type];
+  }
 }

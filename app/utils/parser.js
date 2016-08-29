@@ -1,3 +1,5 @@
+import { every } from 'lodash';
+
 export const ACTION_CONSTANTS = {
   NO_OP: 'NO_OP',
   BATCH_ACTION: 'BATCH_ACTION',
@@ -24,6 +26,7 @@ export const ACTION_CONSTANTS = {
   B_INSERT_SLIDE: 'B_INSERT_SLIDE',
   B_CHANGE_SLIDE_TEMPLATE: 'B_CHANGE_SLIDE_TEMPLATE',
   B_INSERT_IMAGE: 'B_INSERT_IMAGE',
+  B_DELETE_APPEND_TEXT: 'B_DELETE_APPEND_TEXT',
 }
 const C = ACTION_CONSTANTS;
 
@@ -74,6 +77,10 @@ function parse(json) {
       return styleText(json);
     case 18:
       return changeSlideProperties(json);
+    case 22:
+      // TODO return createTable(json);
+      return { action_type: C.NO_OP, info: 'Create Table'}
+
     case 40:
       return parse(json[1]);  // No Clue...
     case 41:
@@ -81,12 +88,12 @@ function parse(json) {
     case 42:
       return styleListEntity(json);
     case 44:
-      return { action_type: C.NO_OP, details: 'Object description' };
+      return { action_type: C.NO_OP, info: 'Object description' };
     case 45:
-      return { action_type: C.NO_OP, details: 'Set Language' };
+      return { action_type: C.NO_OP, info: 'Set Language' };
     default:
       console.log(`Unrecognized action ${json[0]}`);
-      return { action_type: C.NO_OP, details: json[0]};
+      return { action_type: C.NO_OP, info: json[0]};
   }
 }
 
@@ -226,11 +233,25 @@ function batchActions(json) {
 }
 
 function determineBatchType(actions) {
-  return _isThemeChange(actions) ||
-         _isCopyPasteSlide(actions) ||
-         _isInsertSlide(actions) ||
-         _isSlideTemplateChange(actions) ||
-         _isInsertImage(actions) 
+
+  const action_types = _.keyBy(actions, 'action_type');
+  return _isSameAction(actions, action_types) ||
+         _isThemeChange(actions, action_types) ||
+         _isCopyPasteSlide(actions, action_types) ||
+         _isCreateSlide(actions, action_types) ||
+         _isDeleteSlide(actions, action_types) ||
+         _isSlideTemplateChange(actions, action_types) ||
+         _isInsertImage(actions, action_types) ||
+         _isPasteTextbox(actions, action_types) ||
+         _isReplaceText(actions, action_types) ||
+         _isPasteStyledText(actions, action_types)
+         
+}
+
+function _isSameAction(actions, types) {
+  return (
+    _.size(types) == 1
+  ) && _.keys(types)[0] 
 }
 
 function _isInsertImage(actions) {
@@ -240,8 +261,28 @@ function _isInsertImage(actions) {
   ) && C.B_INSERT_IMAGE
 }
 
-function _isCopyPasteSlide(actions) {
-  const types = _.keyBy(actions, 'action_type');
+function _isPasteTextbox(actions, types) {
+  const required = [C.CREATE_OBJECT, C.APPEND_TEXT];
+  return (
+    every(required, a => types[a])
+  ) && C.CREATE_OBJECT;
+}
+
+function _isPasteStyledText(actions, types) {
+  const required = [C.APPEND_TEXT, C.STYLE_TEXT];
+  return (
+    every(required, a => types[a])
+  ) && C.APPEND_TEXT;
+}
+
+function _isReplaceText(actions, types) {
+  const required = [C.DELETE_TEXT, C.APPEND_TEXT];
+  return (
+    every(required, a => types[a])
+  ) && C.B_DELETE_APPEND_TEXT;
+}
+
+function _isCopyPasteSlide(actions, types) {
   return (
     types[C.CREATE_SLIDE] &&
     types[C.CREATE_OBJECT] &&
@@ -249,12 +290,18 @@ function _isCopyPasteSlide(actions) {
   ) && C.B_COPY_PASTE_SLIDE
 }
 
-function _isInsertSlide(actions) {
-  const types = _.keyBy(actions, 'action_type');
+function _isCreateSlide(actions, types) {
+  const required = [C.CREATE_SLIDE, C.CREATE_OBJECT];
   return (
-    types[C.CREATE_SLIDE] &&
-    types[C.CREATE_OBJECT]
-  ) && C.B_INSERT_SLIDE
+    every(required, a => types[a])
+  ) && C.CREATE_SLIDE
+}
+
+function _isDeleteSlide(actions, types) {
+  const required = [C.DELETE_SLIDE];
+  return (
+    every(required, a => types[a])
+  ) && C.DELETE_SLIDE
 }
 
 function _isThemeChange(actions) {
@@ -264,8 +311,7 @@ function _isThemeChange(actions) {
   ) && C.B_NEW_THEME
 }
 
-function _isSlideTemplateChange(actions) {
-  const types = _.keyBy(actions, 'action_type');
+function _isSlideTemplateChange(actions, types) {
   return (
     actions[0].action_type == C.CHANGE_SLIDE_PROPERTIES &&
     actions[0].props[SLIDE_PROPERTIES.LAYOUT]
@@ -661,6 +707,7 @@ export const TEXT_STYLES = {
   LINE_HEIGHT: 'LINE_HEIGHT',
   TEXT_ALIGNMENT: 'TEXT_ALIGNMENT',
   LIST_ENTITY_TYPE: 'LIST_ENTITY_TYPE',
+  BULLET_INDENTATION: 'BULLET_INDENTATION',
 }
 
 const _rawToTextStyles = {
@@ -673,7 +720,10 @@ const _rawToTextStyles = {
   6: TEXT_STYLES.FONT_SIZE,
   11: TEXT_STYLES.LINE_HEIGHT,
   12: TEXT_STYLES.TEXT_ALIGNMENT,
-  27: TEXT_STYLES.LIST_ENTITY_TYPE
+  13: TEXT_STYLES.BULLET_INDENTATION_X, // [36, 72, 108, 144, ...]
+  18: TEXT_STYLES.BULLET_INDENTATION, // [0, 1, 2, 3, ...]
+  27: TEXT_STYLES.LIST_ENTITY_TYPE,
+  28: TEXT_STYLES.BULLET_INDENTATION_X2, // [18, 54, 90, 126, ...]
 }
 
 

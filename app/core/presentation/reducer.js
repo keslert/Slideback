@@ -70,9 +70,6 @@ function reduce(state, payload) {
   switch (payload.action_type) {
 
     case ACTION_CONSTANTS.BATCH_ACTION:
-      if(!payload.details) {
-        // debugger;
-      }
       return _.reduce(payload.actions, reduce, state);
 
     case ACTION_CONSTANTS.DELETE_OBJECTS:
@@ -225,7 +222,7 @@ function reduce(state, payload) {
       return state;
       
     default:
-      console.log("Unknown Presentation Action: " + payload.action_type);
+      // console.log("Unknown Presentation Action: " + payload.action_type);
       return state;
   }
 

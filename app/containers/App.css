@@ -49,6 +49,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  overflow-y: auto;
 }
 .workspace .slide-wrapper {
   border: 1px solid #ddd;
@@ -124,6 +125,41 @@ button.primary:hover {
   pointer-events: none;
 }
 
-.stats {
-  
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #AE89CB;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+.image-placeholder:after {
+  content: '(Image Loading)';
+  color: rgba(255,255,255,0.2);
+  font-size: 20px;
+  font-family: monospace;
+}
+
+
+/*.colors {
+  background: #F8B5D2;
+  color: #E574C3;  
+  color: #BCBF00;
+  color: #BCBF00;
+  color: #C7C7C7;
+  color: #C59C93;
+  color: #8D5649;
+  color: #C5AFD6;
+  color: #9564BF;
+  color: #1776B6;
+  color: #ADC6E9;
+  color: #FF7F00;
+  color: #FFBC72;
+  color: #96E086;
+  color: #D8241F;
+  color: #FF9794;
+  color: #9CDAE6;
+  color: #9CDAE6;
+  color: #7F7F7F;
+}*/

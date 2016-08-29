@@ -50,10 +50,6 @@ export default class ControlBar extends React.Component {
            action.action_type == ACTION_CONSTANTS.DELETE_TEXT;
   }
 
-
-
-
-
   update(force) {
     const { actionQueue, actionQueueIndex, play, realtime, collapse } = this.props;
     const { setQueueIndex } = this.props;

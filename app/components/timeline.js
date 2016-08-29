@@ -47,7 +47,8 @@ export default class Timeline extends React.Component {
     events.forEach((event, i) => {
       const x = i % columns;
       const y = Math.floor(i / columns) * spacing + 1;
-      const height = scale / (event.highlight ? 1 : 2);
+      // const height = scale / (event.highlight ? 1 : 2);
+      const height = scale / 2;
 
       ctx.fillStyle = event.color || '#fff';
       ctx.fillRect(x * scale, y * scale, scale, height);

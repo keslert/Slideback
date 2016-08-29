@@ -47,6 +47,7 @@ export default class SObject extends React.Component {
       if(blob) {
         return <img src={blob} />
       }
+      return <div className={css['image-placeholder']}></div>
     }
   }
 

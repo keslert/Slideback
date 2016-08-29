@@ -1,3 +1,7 @@
+.rickshaw_chart_wrapper {
+	position: relative;
+}
+
 .rickshaw_graph .detail {
 	pointer-events: none;
 	position: absolute;
@@ -107,6 +111,7 @@
 
 .rickshaw_graph {
 	position: relative;
+	background: white;
 }
 .rickshaw_graph svg {
 	display: block;	
@@ -281,14 +286,14 @@
 		-1px -1px 0 rgba(0, 0, 0, 0.8);
 }
 .rickshaw_legend {
-	font-family: Arial;
 	font-size: 12px;
-	color: white;
-	background: #404040;
-	display: inline-block;
-	padding: 12px 5px; 
+	color: #575757;
+	background: rgba(255, 255, 255, 0.5);
+	padding: 5px; 
 	border-radius: 2px;
-	position: relative;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
 .rickshaw_legend:hover {
 	z-index: 10;
@@ -309,16 +314,7 @@
 	border-radius: 2px;
 }
 .rickshaw_legend .label {
-	margin: 0;
-	white-space: nowrap;
-	display: inline;
-	font-size: inherit;
-	background-color: transparent;
-	color: inherit;
-	font-weight: normal;
-	line-height: normal;
-	padding: 0px;
-	text-shadow: none;
+	
 }
 .rickshaw_legend .action:hover {
 	opacity: 0.6;
@@ -352,4 +348,19 @@
 .rickshaw_legend li:active {
 	background: rgba(255, 255, 255, 0.2);
 	border-radius: 3px;
+}
+
+
+.rickshaw_graph .detail .x_label { display: none }
+.rickshaw_graph .detail .item { line-height: 1.4; padding: 0.5em }
+.detail_swatch { float: right; display: inline-block; width: 10px; height: 10px; margin: 0 4px 0 0 }
+.rickshaw_graph .detail .date { color: #a0a0a0 }
+
+.rickshaw_graph svg {
+	background: repeating-linear-gradient(   0deg,   #f9f9f9,   #f9f9f9 30px,   #fff 30px,   #fff 60px )
+}
+
+.rickshaw_range_slider_preview_container .rickshaw_graph {
+	background: none;
+	margin-bottom: 20px;
 }
